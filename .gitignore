@@ -1,0 +1,29 @@
+# MacOS
+.DS_Store
+
+# VSCode
+.vscode
+
+# Debugging
+a.out.dSYM
+minishell_test.dSYM
+
+# Object Files
+*.o
+
+# Experimentation
+experiments
+
+# Notes
+notes.md
+
+# Program
+minishell
+minishell_test
+a.out
+
+*.a
+
+# Redirection files
+infile
+outfile
