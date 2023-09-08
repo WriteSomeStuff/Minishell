@@ -1,140 +1,124 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        ::::::::            */
-/*   expander.c                                         :+:    :+:            */
-/*                                                     +:+                    */
-/*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
-/*                                                   +#+                      */
-/*   Created: 2023/08/01 14:24:07 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/08/01 14:24:10 by cschabra      ########   odam.nl         */
-/*                                                                            */
-/* ************************************************************************** */
+// /* ************************************************************************** */
+// /*							                                                  */
+// /*                                                        ::::::::            */
+// /*   expander.c                                         :+:    :+:            */
+// /*                                                     +:+                    */
+// /*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
+// /*                                                   +#+                      */
+// /*   Created: 2023/08/30 12:08:20 by mstegema      #+#    #+#                 */
+// /*   Updated: 2023/09/06 15:39:23 by mstegema      ########   odam.nl         */
+// /*                                                                            */
+// /* ************************************************************************** */
 
-#include "minishell.h"
+// #include "minishell.h"
 
-static bool	check_environment_variable_length(t_expand_length_info *info)
-{
-	if ((info->dquote_i == -1 && info->quote_i == -1) \
-	|| info->dquote_i < info->quote_i)
-	{
-		info->i = resolve_environment_variable_length(\
-		&(info->data[info->i + 1]), &info->length);
-		if (info->i == -1)
-			return (false);
-	}
-	else
-	{
-		info->length++;
-	}
-	return (true);
-}
+// //find environment variable
+// //check lenght & malloc data pointer to it
+// //temp = current token->data
+// //token->data is pointer to new data
+// //free temp
+// //return
 
-static int	determine_expand_data_length(char *data)
-{
-	t_expand_length_info	info;
+// // example string: "hello $USER"
 
-	init_expand_length_info(&info, data);
-	while (!expand_length_data_at(info, '\0'))
-	{
-		if (expand_length_data_at(info, '$'))
-		{
-			if (!check_environment_variable_length(&info))
-				return (-1);
-		}
-		else if (expand_length_data_at(info, '\''))
-		{
-			update_quote(&info);
-		}
-		else if (expand_length_data_at(info, '\"'))
-		{
-			update_dquote(&info);
-		}
-		else
-		{
-			info.length++;
-		}
-		info.i++;
-	}
-	return (info.length);
-}
-
-static char	*create_expanded_data(char *old_data, int length)
-{
-	t_expand_info	info;
-
-	if (!init_expand_info(&info, old_data, length))
-		return (NULL);
-	while (!expand_data_at(info, '\0'))
-	{
-		if (expand_data_at(info, '$'))
-		{
-			if (!check_env_variable_assignment(&info))
-				return (free(info.expanded_data), NULL);
-		}
-		else if (expand_data_at(info, '\''))
-			check_quote_index_at_data_index(&info);
-		else if (expand_data_at(info, '\"'))
-			check_dquote_index_at_data_index(&info);
-		else
-		{
-			info.expanded_data[info.j] = info.old_data[info.i];
-			info.j++;
-		}
-		info.i++;
-	}
-	info.expanded_data[info.j] = '\0';
-	return (info.expanded_data);
-}
-
-bool	expand_data(t_token *token, t_token *previous_token)
-{
-	int		expand_data_length;
-	bool	expandable;
-	char	*old_data;
-
-	if (token->type == REDIRECTION_TOKEN || token->type == PIPE_TOKEN
-		|| is_here_doc_argument(token, previous_token))
-		return (true);
-	expand_data_length = determine_expand_data_length(token->data);
-	expandable = str_contains_any(token->data, "$\"\'");
-	if (expandable)
-	{
-		old_data = token->data;
-		token->data = create_expanded_data(old_data, expand_data_length);
-		if (token->data == NULL)
-			return (free(old_data), false);
-		free(old_data);
-	}
-	return (true);
-}
-
-bool	expand_tokens(t_list *tokens)
-{
-	t_list	*current;
-	t_token	*current_token;
-	t_token	*previous_token;
-
-	previous_token = NULL;
-	current = tokens;
-	while (current != NULL)
-	{
-		current_token = (t_token *)current->content;
-		if (!expand_data(current_token, previous_token))
-			return (false);
-		previous_token = current_token;
-		current = current->next;
-	}
-	return (true);
-}
-
-// 1. ook $? afhandelen 
-// (nadat de implementatie hiervoor is gemaakt bij de executor)
-// int	main(void)
+// //not finished
+// char	*find_end(char *str)
 // {
-// 	t_list	*tokens;
+// 	char	*end;
+// 	size_t	i;
+// 	size_t	len;
 
-// 	tokens = read_tokens_from_command_line("echo \"hallo $onzin\"");
-// 	expand_tokens(tokens);
-// 	ft_lstclear(&tokens, &token_free);
-// 	system("leaks -q minishell");
+// 	i = 0;
+// 	while (str[i] != '\0')
+// 	{
+// 		if (str[i] == '$')
+// 		{
+// 			while (str[i] != '\0')
+// 			{
+// 				if (str[i] == ' ')
+// 					break ;
+// 				i++;
+// 			}
+// 		}
+// 		i++;
+// 	}
+// 	len = ft_strlen(str);
+// 	end = ft_substr(str, i, len);
+// 	return (end);
+// }
+
+// char	*find_begin(char *str)
+// {
+// 	char	*beginning;
+// 	size_t	i;
+
+// 	i = 0;
+// 	while (str[i] != '$')
+// 		i++;
+// 	beginning = ft_substr(str, 0, i);
+// 	return (beginning);
+// }
+
+// size_t	expand_data(char *str)
+// {
+// 	char	*new_data;
+// 	char	*beginning;
+// 	char	*middle;
+// 	char	*end;
+
+// 	beginning = find_begin(str);
+// }
+
+// size_t	replace_token(t_token *token)
+// {
+// 	char	*new_data;
+// 	char	*temp;
+
+// 	new_data = expand_data(token->data);
+// 	temp = token->data;
+// 	token->data = new_data;
+// 	free(temp);
+// 	return (0);
+// }
+
+// bool	expand_check(t_token *token, size_t start)
+// {
+// 	bool	expand;
+// 	size_t	i;
+// 	size_t	count;
+
+// 	expand = false;
+// 	i = 0;
+// 	count = 0;
+// 	while (token->data[i] != '\0' || i < start)
+// 	{
+// 		if (token->data[i] == '\'')
+// 			count++;
+// 		i++;
+// 	}
+// 	if (count % 2 != 0)
+// 		expand = true;
+// 	return (expand);
+// }
+
+// t_list	expand(t_list *tokens)
+// {
+// 	t_token	*token;
+// 	size_t	i;
+
+// 	while (tokens != NULL)
+// 	{
+// 		i = 0;
+// 		token = tokens->content;
+// 		while (token->data[i] != '\0')
+// 		{
+// 			if (token->data[i] == '$')
+// 			{
+// 				if (expand_check(token, i) == true)
+// 					replace_token(token);
+// 			}
+// 			i++;
+// 		}
+// 		tokens = tokens->next;
+// 	}
 // }

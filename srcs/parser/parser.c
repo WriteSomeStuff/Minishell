@@ -3,81 +3,124 @@
 /*                                                        ::::::::            */
 /*   parser.c                                           :+:    :+:            */
 /*                                                     +:+                    */
-/*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
+/*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/08/01 14:24:50 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/08/16 13:06:06 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/09/01 17:47:40 by mstegema      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	free_cmd(t_cmd *cmd)
+static t_scmd_list	*init_cmdstruct(t_list *tokens, size_t count, t_env *env)
 {
-	free(cmd);
-}
-
-t_cmd	*alloc_cmd(t_list *tokens, t_env *env)
-{
-	t_cmd	*cmd;
-
-	if (ft_lstsize(tokens) == 0)
-		return (NULL);
-	cmd = (t_cmd *)malloc(sizeof(t_cmd));
-	if (cmd == NULL)
-		return (NULL);
-	cmd->env = env;
-	return (cmd);
-}
-
-bool	add_cmd_node(t_list *cmd_tokens, t_list **cmds, t_env *env)
-{
-	t_cmd	*cmd;
-	t_list	*cmd_item;
-
-	cmd = alloc_cmd(cmd_tokens, env);
-	if (cmd == NULL)
-		return (false);
-	cmd_item = ft_lstnew(cmd);
-	if (cmd_item == NULL)
-		return (free_cmd(cmd), false);
-	ft_lstadd_back(cmds, cmd_item);
-	return (true);
-}
-
-bool	parse_tokens(t_list *tokens, t_list *cmds, t_env *env)
-{
-	t_list	*current;
-	t_list	*cmd_tokens;
-	t_list	*cmd_token;
 	t_token	*token;
+	t_cmd	*cmd;
+	size_t	i;
+	char	**data;
+	bool	builtin;
 
-	cmd_tokens = NULL;
-	current = tokens;
-	while (current != NULL)
+	builtin = is_builtin(&tokens);
+	data = ft_calloc(count + 1, sizeof(char *));
+	if (!data)
+		return (NULL); //throw error
+	i = 0;
+	while (i < count)
 	{
-		token = (t_token *)current->content;
-		if (token->type == PIPE_TOKEN)
-		{
-			if (!add_cmd_node(cmd_tokens, &cmds, env))
-				return (lst_free(&cmd_tokens), false);
-			lst_free(&cmd_tokens);
-		}
-		else
-		{
-			cmd_token = ft_lstnew(token);
-			if (cmd_token == NULL)
-				return (lst_free(&cmd_tokens), false);
-			ft_lstadd_back(&cmd_tokens, cmd_token);
-		}
-		current = current->next;
+		token = tokens->content;
+		data[i] = token->data;
+		i++;
+		tokens = tokens->next;
 	}
-	if (ft_lstsize(cmd_tokens) != 0)
+	cmd = ft_allocate_mem_cmd(data, env, builtin);
+	return (ft_lstnewscmd(cmd, CMD));
+}
+
+static t_scmd_list	*init_rdrstruct(t_list *tokens)
+{
+	t_rdr	*rdr;
+	t_token	*token;
+	t_token	*next_token;
+
+	rdr = NULL;
+	token = tokens->content;
+	if (tokens->next)
+		next_token = tokens->next->content;
+	if (tokens->next == NULL || next_token->type != CMD_OR_FILE_TOKEN)
+		return (ft_putstr_fd("BabyBash: syntax error near unexpected token\n", \
+		2), NULL);
+	if (ft_strncmp(token->data, ">>", 2) == 0)
+		rdr = ft_allocate_mem_rdr(next_token->data, RDR_APPEND);
+	else if (ft_strncmp(token->data, "<<", 2) == 0)
+		rdr = ft_allocate_mem_rdr(next_token->data, HERE_DOC);
+	else if (ft_strncmp(token->data, ">", 1) == 0)
+		rdr = ft_allocate_mem_rdr(next_token->data, RDR_OUTPUT);
+	else
+		rdr = ft_allocate_mem_rdr(next_token->data, RDR_INPUT);
+	return (ft_lstnewscmd(rdr, RDR));
+}
+
+// if first token == cmd && has rdr, all cmd tokens after belong to first struct.
+t_list	*make_scmdlist(t_list *tokens, t_scmd_list **scmds, t_env *env)
+{
+	t_scmd_list		*node;
+	t_token			*token;
+	size_t			count;
+
+	while (tokens != NULL)
 	{
-		ft_put_token_lst(cmd_tokens);
-		if (!add_cmd_node(cmd_tokens, &cmds, env))
-			return (lst_free(&cmd_tokens), false);
-		lst_free(&cmd_tokens);
+		token = tokens->content;
+		if (token->type == CMD_OR_FILE_TOKEN)
+		{
+			count = count_cmdtokens(&tokens);
+			node = init_cmdstruct(tokens, count, env);
+			while (count-- > 0)
+				tokens = tokens->next;
+		}
+		else if (token->type == RDR_TOKEN)
+		{
+			node = init_rdrstruct(tokens);
+			if (node)
+				tokens = tokens->next->next;
+		}
+		if (!node || token->type == PIPE_TOKEN)
+			return (tokens);
+		scmdlst_add_back(scmds, node);
 	}
-	return (true);
+	return (tokens);
+}
+
+static t_list	*make_cmdlist(t_list *tokens, t_list **cmds, t_env *env)
+{
+	t_list		*node;
+	t_scmd_list	*scmds;
+
+	node = NULL;
+	scmds = NULL;
+	while (tokens)
+	{
+		tokens = make_scmdlist(tokens, &scmds, env);
+		node = ft_lstnew(scmds);
+		scmds = NULL;
+		if (!node)
+			return (ft_lstclear(cmds, &free), NULL);
+		ft_lstadd_back(cmds, node);
+		if (tokens == NULL)
+			return (*cmds);
+		tokens = tokens->next;
+	}
+	return (*cmds);
+}
+
+t_list	*parse(t_env *env, const char *user_input)
+{
+	t_list	*tokens;
+	t_list	*cmds;
+
+	tokens = NULL;
+	tokens = tokenisation(user_input);
+	// expand(tokens);
+	cmds = NULL;
+	cmds = make_cmdlist(tokens, &cmds, env);
+	return (cmds);
 }

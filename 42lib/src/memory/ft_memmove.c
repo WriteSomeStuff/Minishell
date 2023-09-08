@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/10/06 12:15:00 by cschabra      #+#    #+#                 */
-/*   Updated: 2022/10/19 16:41:15 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/08/22 17:10:37 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void	*ft_memmove(void *dst, const void *src, size_t len)
 			d[len] = s[len];
 	}
 	else
-	{	
+	{
 		while (i < len)
 		{
 			d[i] = s[i];

@@ -3,58 +3,93 @@
 /*                                                        ::::::::            */
 /*   heredoc.c                                          :+:    :+:            */
 /*                                                     +:+                    */
-/*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
+/*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/07/04 14:59:07 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/08/18 14:30:40 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/09/07 18:09:08 by cheyennesch   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-bool	ft_heredoc(char *data)
+static void	ft_expand(void)
 {
-	int		fd[2];
-	int		templen;
-	int		datalen;
-	char	*temp;
-	bool	expand;
+	return ;
+}
 
-	if (pipe(fd) == -1)
-	{
-		ft_throw_error(errno, "pipe in heredoc failed");
-		return (false);
-	}
-	datalen = ft_strlen(data);
-	if ((data[0] == '\'' && data[datalen - 1] == '\'') || \
-			(data[0] == '"' && data[datalen - 1] == '"'))
-	{
-		puts("quotes found :)");
-		expand = false;
-	}
-	else
-		expand = true;
+static bool	ft_read_input(char *data, int32_t datalen, int32_t *fd, bool expand)
+{
+	char	*temp;
+	size_t	templen;
+
 	while (1)
 	{
-		temp = readline(">");
-		templen = ft_strlen(temp);
-		if (!ft_strncmp(temp, data, (templen + 1)))
+		temp = readline("> ");
+		if (!temp)
+			return (false);
+		if (!ft_strncmp(temp, data, datalen))
 		{
 			free(temp);
 			break ;
 		}
-		// if (temp[0] == '$' && expand == true)
-		// {
-		// 	// call expand function that returns the string if found in env else stays the same
-		// }
-		write(fd[1], temp, templen);
-        write(fd[1], "\n", 1);
+		if (expand == true)
+			ft_expand();
+		templen = ft_strlen(temp);
+		if (write(fd[1], temp, templen) == -1 || write(fd[1], "\n", 1) == -1)
+		{
+			perror("BabyBash");
+			return (free(temp), false);	
+		}
+		free(temp);
 	}
-	if (dup2(fd[0], STDIN_FILENO) == -1)
-		ft_throw_error(errno, "dup2 in heredoc failed");
-	close(fd[0]);
-	close(fd[1]);
 	return (true);
 }
-// expand only if the delimiter is not between quotes. cat << EOF or cat << ";" / cat << ';' work differently.
-// ";" or ';' expansion doesn't happen. check conv with leon for quotes.
+
+static void	ft_remove_quotes(char *data)
+{
+	int32_t	i;
+	int32_t	j;
+
+	i = 0;
+	while (data[i])
+	{
+		if (data[i] == '\'' || data[i] == '"')
+		{
+			j = i;
+			while (data[j])
+			{
+				data[j] = data[j + 1];
+				j++;
+			}
+		}
+		i++;
+	}
+}
+
+bool	ft_heredoc(t_init *process, char *data)
+{
+	int32_t	fd[2];
+	size_t	datalen;
+	bool	expand;
+
+	expand = true;
+	if (pipe(fd) == -1)
+		return (ft_throw_error(process, errno), false);
+	datalen = ft_strlen(data);
+	if (ft_strchr(data, '"') || ft_strchr(data, '\''))
+	{
+		ft_remove_quotes(data);
+		expand = false;
+	}
+	if (!ft_read_input(data, datalen, fd, expand))
+	{
+		process->errorcode = 1;
+		if (close(fd[0]) == -1 || close(fd[1]) == -1)
+			ft_throw_error(process, errno);
+		return (false);
+	}
+	if (dup2(fd[0], STDIN_FILENO) == -1 || close(fd[0]) == -1 || \
+		close(fd[1]) == -1)
+		return (ft_throw_error(process, errno), false);
+	return (true);
+}

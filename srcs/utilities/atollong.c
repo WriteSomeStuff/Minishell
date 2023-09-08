@@ -6,13 +6,13 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/02 13:50:56 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/05/17 13:31:01 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/09/07 12:57:17 by cheyennesch   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static int	is_whitespace_ll(char c)
+static int32_t	is_whitespace_ll(char c)
 {
 	if (c == ' ' || c == '\t'
 		|| c == '\r' || c == '\n'
@@ -21,11 +21,11 @@ static int	is_whitespace_ll(char c)
 	return (0);
 }
 
-static int	skip_white_space_ll(const char *str, int *multiplyer)
+static int32_t	skip_white_space_ll(const char *str, int32_t *multiplyer)
 {
-	int		i;
+	int32_t	i;
 	char	c;
-	int		is_prefixed;
+	int32_t	is_prefixed;
 
 	i = 0;
 	is_prefixed = 0;
@@ -47,13 +47,13 @@ static int	skip_white_space_ll(const char *str, int *multiplyer)
 	return (i);
 }
 
-long long int	ft_atollong(const char *str)
+int64_t	ft_atollong(t_list *lst, t_init *process, const char *str)
 {
-	unsigned long long int	result;
-	long long int			return_result;
-	int						i;
-	char					c;
-	int						multiplyer;
+	u_int64_t	result;
+	int64_t		return_result;
+	int32_t		i;
+	int32_t		multiplyer;
+	char		c;
 
 	result = 0;
 	multiplyer = 1;
@@ -71,7 +71,7 @@ long long int	ft_atollong(const char *str)
 	}
 	if (((result - 1) > LLONG_MAX && multiplyer == -1) \
 		|| (result > LLONG_MAX && multiplyer == 1))
-		ft_throw_error(255, "numeric argument required");
+		ft_error_exit(lst, process, (char *)str);
 	return_result = result * multiplyer;
 	return (return_result);
 }

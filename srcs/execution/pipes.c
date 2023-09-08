@@ -6,15 +6,15 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/02 13:32:13 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/08/10 14:31:26 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/09/07 13:00:52 by cheyennesch   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	ft_free_pipes(int **pipes, int pipe_count)
+void	ft_free_pipes(int32_t **pipes, int32_t pipe_count)
 {
-	int	i;
+	int32_t	i;
 
 	i = 0;
 	while (i < pipe_count)
@@ -30,9 +30,9 @@ void	ft_free_pipes(int **pipes, int pipe_count)
 	}
 }
 
-int	ft_count_pipes(t_list *lst)
+int32_t	ft_count_pipes(t_list *lst)
 {
-	int		pipe_count;
+	int32_t	pipe_count;
 
 	pipe_count = 0;
 	while (lst->next)
@@ -43,24 +43,24 @@ int	ft_count_pipes(t_list *lst)
 	return (pipe_count);
 }
 
-int	**ft_create_pipes(int **pipes, int pipe_count)
+bool	ft_create_pipes(t_init *process, size_t pipe_count)
 {
-	int	i;
+	size_t	i;
 
 	i = 0;
-	pipes = malloc(pipe_count * sizeof(int *));
-	if (!pipes)
-		return (perror("minishell: "), NULL);
+	process->pipes = malloc(pipe_count * sizeof(int32_t *));
+	if (!process->pipes)
+		return (perror("BabyBash"), false);
 	while (i < pipe_count)
 	{
-		pipes[i] = malloc(2 * sizeof(int));
-		if (!pipes[i] || pipe(pipes[i]) == -1)
+		process->pipes[i] = malloc(2 * sizeof(int32_t));
+		if (!process->pipes[i] || pipe(process->pipes[i]) == -1)
 		{
-			perror("minishell: ");
-			ft_free_pipes(pipes, pipe_count);
-			return (NULL);
+			perror("BabyBash");
+			ft_free_pipes(process->pipes, i);
+			return (false);
 		}
 		i++;
 	}
-	return (pipes);
+	return (true);
 }

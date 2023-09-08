@@ -6,82 +6,111 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/06/26 12:39:09 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/08/18 13:17:29 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/09/07 18:04:26 by cheyennesch   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	ft_restore_output(t_childproc *child)
+void	ft_close_fds(t_init *process)
 {
-	if (dup2(child->oldout, STDOUT_FILENO) == -1 || close (child->oldout) == -1)
-		perror("minishell: ");
-}
-
-void	ft_close_fds(t_childproc *child)
-{
-	int	i;
+	size_t	i;
 
 	i = 0;
-	while (i < child->nr_of_cmds - 1)
+	while (i < (process->nr_of_cmds - 1))
 	{
-		if (close(child->pipes[i][0]) == -1 || close(child->pipes[i][1]) == -1)
-			perror("minishell: ");
+		if (close(process->pipes[i][0]) == -1 || \
+			close(process->pipes[i][1]) == -1)
+			ft_throw_error(process, errno);
 		i++;
 	}
 }
 
-bool	ft_infile(t_childproc *child, t_rdr *rdr)
+bool	ft_infile(t_init *process, t_rdr *rdr)
 {
-	child->fdin = open(rdr->data, O_RDONLY);
-	if (child->fdin == -1 || dup2(child->fdin, STDIN_FILENO) == -1 || \
-		close(child->fdin) == -1)
+	int32_t	temp;
+
+	process->fdin = open(rdr->data, O_RDONLY);
+	if (process->fdin == -1 || dup2(process->fdin, STDIN_FILENO) == -1 || \
+		close(process->fdin) == -1)
 	{
-		child->errorcode = errno;
-		ft_putstr_fd("minishell: ", STDERR_FILENO);
+		temp = errno;
+		ft_putstr_fd("BabyBash: ", STDERR_FILENO);
+		process->errorcode = 1;
+		errno = temp;
 		return (perror(rdr->data), false);
 	}
 	return (true);
 }
 
-bool	ft_outfile(t_childproc *child, t_rdr *rdr)
+bool	ft_outfile(t_init *process, t_rdr *rdr)
 {
+	int32_t	temp;
+
 	if (rdr->type == RDR_APPEND)
-		child->fdout = open(rdr->data, O_WRONLY | O_CREAT | O_APPEND, 0644);
+		process->fdout = open(rdr->data, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	else
-		child->fdout = open(rdr->data, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (child->fdout == -1 || dup2(child->fdout, STDOUT_FILENO) == -1 || \
-		close(child->fdout) == -1)
+		process->fdout = open(rdr->data, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (process->fdout == -1 || dup2(process->fdout, STDOUT_FILENO) == -1 || \
+		close(process->fdout) == -1)
 	{
-		ft_putstr_fd("minishell: ", STDERR_FILENO);
+		temp = errno;
+		ft_putstr_fd("BabyBash: ", STDERR_FILENO);
+		process->errorcode = 1;
+		errno = temp;
 		return (perror(rdr->data), false);
 	}
 	return (true);
 }
 
-void	ft_check_for_files(t_childproc *child, t_scmd_list *lst)
+bool	ft_check_for_heredoc(t_scmd_list *scmd, t_init *process)
+{
+	t_rdr	*rdr;
+	
+	while (scmd)
+	{
+		if (scmd->type == RDR)
+		{
+			rdr = scmd->data;
+			if (rdr->type == HERE_DOC)
+			{
+				if (dup2(process->oldin, STDIN_FILENO) == -1)
+				{
+					ft_throw_error(process, errno);
+					return (false);
+				}
+				if (!ft_heredoc(process, rdr->data))
+					return (false);
+				process->heredoc = true;
+			}
+		}
+		scmd = scmd->next;
+	}
+	return (true);
+}
+
+bool	ft_check_for_files(t_scmd_list *scmd, t_init *process)
 {
 	t_rdr	*rdr;
 
-	while (lst)
+	if (!ft_check_for_heredoc(scmd, process))
+		return (false);
+	while (scmd)
 	{
-		if (lst->type == RDR)
+		if (scmd->type == RDR)
 		{
-			rdr = lst->data;
+			rdr = scmd->data;
 			if (rdr->type == RDR_INPUT)
 			{
-				if (!ft_infile(child, rdr))
-					break ;
+				if (!ft_infile(process, rdr))
+					return (false);
 			}
-			if (rdr->type == RDR_OUTPUT || \
-				rdr->type == RDR_APPEND)
-				ft_outfile(child, rdr);
-			if (rdr->type == HERE_DOC)
-				ft_heredoc(rdr->data);
+			if (rdr->type == RDR_OUTPUT || rdr->type == RDR_APPEND)
+				ft_outfile(process, rdr);
 		}
-		lst = lst->next;
+		scmd = scmd->next;
 	}
+	return (true);
 }
-// edgecases and testing..
 // bash checks all for existing, if not existing infile, error, dont check the rest.
 // if all infiles exist, only read out of last one. if all outfiles are created or existing, only send to last one.

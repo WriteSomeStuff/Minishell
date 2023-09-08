@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/23 12:07:08 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/05/23 12:08:02 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/09/07 13:02:34 by cheyennesch   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,10 @@ static void	ft_swap(char **a, char **b)
 	*b = temp;
 }
 
-void	ft_bubble_sort(char **sortedenv, int len)
+void	ft_bubble_sort(char **sortedenv, int32_t len)
 {
-	int		i;
-	int		j;
+	int32_t	i;
+	int32_t	j;
 
 	i = 0;
 	j = 0;
