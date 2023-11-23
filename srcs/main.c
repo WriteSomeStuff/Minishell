@@ -6,40 +6,38 @@
 /*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/04/11 17:02:44 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/08 12:40:40 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/22 15:50:25 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	ft_leaks(void)
-{
-	system("leaks -q minishell");
-}
+int32_t	g_signal = 0;
 
-static void	ft_loop(t_list *lst, t_init *process, t_env *env)
+static void	ft_loop(t_list *lst, t_init *process)
 {
 	char	*str;
 
 	while (1)
 	{
-		ft_setup_interactive(process);
+		if (!ft_setup_interactive(process))
+			break ;
 		str = readline("BabyBash$ ");
 		if (!str)
 		{
 			ft_putendl_fd("Exit", STDERR_FILENO);
 			break ;
 		}
-		str = complete_input(str);
-		ft_setup_noninteractive(process);
+		str = complete_input(process, str);
+		if (!str || !ft_setup_noninteractive(process))
+			break ;
 		if (ft_strlen(str))
 			add_history(str);
-		lst = parse(env, str);
+		lst = parse(process->env, process, str);
 		free(str);
 		str = NULL;
-		if (!lst)
-			continue ;
-		ft_executor(lst, process);
+		if (process->must_exit == true || !ft_executor(lst, process))
+			break ;
 	}
 	rl_clear_history();
 }
@@ -51,15 +49,14 @@ int32_t	main(int32_t argc, char **argv, char **envp)
 	t_env	env;
 
 	(void)argv, (void)argc;
-	// atexit(ft_leaks);
 	process.errorcode = 0;
+	process.must_exit = false;
 	if (!ft_copy_env(&process, &env, envp))
 		return (process.errorcode);
-	ft_loop(&lst, &process, &env);
+	process.env = &env;
+	ft_loop(&lst, &process);
+	if (g_signal == SIGINT)
+		process.errorcode = 130;
 	ft_free_str_array(env.new_env, NULL);
-	printf("at exit: %i\n", process.errorcode); // remove
 	return (process.errorcode);
 }
-
-// free in parse: only free own allocated tokens etc that isn't send to executor
-// to do: wait for all children and fix errorcode/continue builtins errorcode, freeing, expander, handling quotes, testing.

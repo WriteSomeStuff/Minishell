@@ -6,13 +6,13 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/19 12:55:14 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/07 17:26:39 by cheyennesch   ########   odam.nl         */
+/*   Updated: 2023/11/09 15:14:58 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	ft_add_new_var(t_cmd *cmd, t_env *env, char *arg)
+void	ft_add_new_var(t_init *process, t_cmd *cmd, t_env *env, char *arg)
 {
 	t_export	exp;
 	int32_t		i;
@@ -23,22 +23,24 @@ void	ft_add_new_var(t_cmd *cmd, t_env *env, char *arg)
 	exp.new_env = malloc((env->env_len + 2) * sizeof(char *));
 	if (!exp.new_env)
 	{
-		perror("BabyBash");
-		return ; // set errorcode to 1
+		ft_throw_error(process, errno);
+		process->must_exit = true;
+		return ;
 	}
 	exp.arg_copy = malloc((exp.arg_len + 1) * sizeof(char));
 	if (!exp.arg_copy)
 	{
-		perror("BabyBash");
+		ft_throw_error(process, errno);
 		free(exp.new_env);
 		exp.new_env = NULL;
-		return ; // set errorcode to 1
+		process->must_exit = true;
+		return ;
 	}
 	ft_memcpy(exp.arg_copy, arg, (exp.arg_len + 1));
-	ft_fill_env(cmd, env, &exp, i);
+	ft_fill_env(process, cmd, &exp, i);
 }
 
-static void	ft_overwrite_var(t_cmd *cmd, char *arg, int32_t c)
+void	ft_overwrite_var(t_init *process, t_cmd *cmd, char *arg, int32_t c)
 {
 	size_t	len;
 
@@ -50,16 +52,19 @@ static void	ft_overwrite_var(t_cmd *cmd, char *arg, int32_t c)
 	cmd->env->new_env[c] = malloc((len + 1) * sizeof(char));
 	if (!cmd->env->new_env[c])
 	{
-		perror("BabyBash"); // set errorcode to 1
-		return ;	
+		ft_throw_error(process, errno);
+		process->must_exit = true;
+		return ;
 	}
 	ft_memcpy(cmd->env->new_env[c], arg, (len + 1));
 }
 
-static bool	ft_check_export_input(t_cmd *cmd, t_env *env, char *arg, int32_t j)
+static bool	ft_check_export_input(t_init *process, char *arg, int32_t j)
 {
+	t_cmd	*cmd;
 	int32_t	c;
 
+	cmd = process->cmd;
 	c = 0;
 	if (arg[j] == '_' && (arg[j + 1] == '=' || arg[j + 1] == '+'))
 		return (false);
@@ -67,21 +72,21 @@ static bool	ft_check_export_input(t_cmd *cmd, t_env *env, char *arg, int32_t j)
 	{
 		while (ft_isalpha(arg[j]) || ft_isdigit(arg[j]) || arg[j] == '_')
 			j++;
-		while (env->new_env[c])
+		while (cmd->env->new_env[c])
 		{
-			if (!ft_cmpname(arg, env->new_env[c], j) && arg[j] != '+')
-				return (ft_overwrite_var(cmd, arg, c), true);
+			if (!ft_cmpname(arg, cmd->env->new_env[c], j) && arg[j] != '+')
+				return (ft_overwrite_var(process, cmd, arg, c), true);
 			c++;
 		}
 		if (arg[j] == '+' && (arg[j + 1] == '='))
-			return (ft_export_append(cmd, env, arg, j), true);
+			return (ft_export_append(process, cmd, arg, j), true);
 		else if (arg[j] == '=' || !arg[j])
-			return (ft_add_new_var(cmd, env, arg), true);
+			return (ft_add_new_var(process, cmd, cmd->env, arg), true);
 	}
 	return (false);
 }
 
-static void	ft_export_no_args(t_cmd *cmd)
+static bool	ft_export_no_args(t_cmd *cmd)
 {
 	char	**sortedenv;
 	size_t	len;
@@ -91,35 +96,45 @@ static void	ft_export_no_args(t_cmd *cmd)
 		len++;
 	sortedenv = malloc((len + 1) * sizeof(char *));
 	if (!sortedenv)
-	{
-		perror("BabyBash"); // set errorcode to 1
-		return ;
-	}
+		return (perror("BabyBash"), false);
 	ft_memcpy(sortedenv, cmd->env->new_env, (len + 1) * sizeof(char *));
 	ft_bubble_sort(sortedenv, len);
-	ft_write_export(sortedenv);
+	if (!ft_write_export(sortedenv))
+	{
+		free(sortedenv);
+		sortedenv = NULL;
+		return (false);
+	}
 	free(sortedenv);
 	sortedenv = NULL;
+	return (true);
 }
 
-void	ft_export_builtin(t_cmd *cmd)
+void	ft_export_builtin(t_init *process, t_cmd *cmd)
 {
-	char	**arg;
 	int32_t	i;
-	int32_t	j;
 
 	i = 1;
-	j = 0;
-	arg = cmd->arg;
-	if (!arg[i])
+	process->errorcode = 0;
+	if (!cmd->arg[i])
 	{
-		ft_export_no_args(cmd);
-		return ;
+		if (!ft_export_no_args(cmd))
+		{
+			process->errorcode = 1;
+			process->must_exit = true;
+		}
 	}
-	while (arg[i])
+	while (process->must_exit == false && cmd->arg[i])
 	{
-		if (!ft_check_export_input(cmd, cmd->env, arg[i], j))
-			ft_error_export_unset("export", arg[i]);
+		if (!ft_check_export_input(process, cmd->arg[i], 0))
+		{
+			ft_error_export_unset("export", cmd->arg[i]);
+			process->errorcode = 1;
+		}
+		else if (process->must_exit == true)
+			process->errorcode = 1;
+		else
+			process->errorcode = 0;
 		i++;
 	}
 }

@@ -5,8 +5,10 @@
 .vscode
 
 # Debugging
+a.out
 a.out.dSYM
 minishell_test.dSYM
+minishell.dSYM
 
 # Object Files
 *.o

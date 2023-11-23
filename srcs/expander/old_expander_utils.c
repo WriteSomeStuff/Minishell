@@ -83,7 +83,7 @@
 // {
 // 	if (previous_token == NULL)
 // 		return (false);
-// 	if (token->type != CMD_OR_FILE_TOKEN)
+// 	if (token->type != CMD_TOKEN)
 // 		return (false);
 // 	if (previous_token->type != RDR_TOKEN)
 // 		return (false);

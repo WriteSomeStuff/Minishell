@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/06/26 12:39:09 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/07 18:04:26 by cheyennesch   ########   odam.nl         */
+/*   Updated: 2023/11/23 15:10:18 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,15 @@ void	ft_close_fds(t_init *process)
 	i = 0;
 	while (i < (process->nr_of_cmds - 1))
 	{
-		if (close(process->pipes[i][0]) == -1 || \
-			close(process->pipes[i][1]) == -1)
+		if (close(process->pipes[i][0]) == -1)
+			ft_throw_error(process, errno);
+		if (close(process->pipes[i][1]) == -1)
 			ft_throw_error(process, errno);
 		i++;
 	}
 }
 
-bool	ft_infile(t_init *process, t_rdr *rdr)
+static bool	ft_infile(t_init *process, t_rdr *rdr)
 {
 	int32_t	temp;
 
@@ -43,7 +44,7 @@ bool	ft_infile(t_init *process, t_rdr *rdr)
 	return (true);
 }
 
-bool	ft_outfile(t_init *process, t_rdr *rdr)
+static void	ft_outfile(t_init *process, t_rdr *rdr)
 {
 	int32_t	temp;
 
@@ -58,15 +59,14 @@ bool	ft_outfile(t_init *process, t_rdr *rdr)
 		ft_putstr_fd("BabyBash: ", STDERR_FILENO);
 		process->errorcode = 1;
 		errno = temp;
-		return (perror(rdr->data), false);
+		perror(rdr->data);
 	}
-	return (true);
 }
 
-bool	ft_check_for_heredoc(t_scmd_list *scmd, t_init *process)
+static bool	ft_check_for_heredoc(t_scmd_list *scmd, t_init *process)
 {
 	t_rdr	*rdr;
-	
+
 	while (scmd)
 	{
 		if (scmd->type == RDR)
@@ -74,13 +74,17 @@ bool	ft_check_for_heredoc(t_scmd_list *scmd, t_init *process)
 			rdr = scmd->data;
 			if (rdr->type == HERE_DOC)
 			{
-				if (dup2(process->oldin, STDIN_FILENO) == -1)
-				{
+				if (dup2(process->oldin, STDIN_FILENO) == -1 || \
+					signal(SIGQUIT, SIG_IGN) == SIG_ERR)
 					ft_throw_error(process, errno);
+				if (!ft_heredoc(process, rdr->data))
+				{
+					if (signal(SIGQUIT, SIG_IGN) == SIG_ERR)
+						ft_throw_error(process, errno);
 					return (false);
 				}
-				if (!ft_heredoc(process, rdr->data))
-					return (false);
+				if (signal(SIGQUIT, SIG_DFL) == SIG_ERR)
+					ft_throw_error(process, errno);
 				process->heredoc = true;
 			}
 		}
@@ -94,7 +98,10 @@ bool	ft_check_for_files(t_scmd_list *scmd, t_init *process)
 	t_rdr	*rdr;
 
 	if (!ft_check_for_heredoc(scmd, process))
+	{
+		process->must_exit = true;
 		return (false);
+	}
 	while (scmd)
 	{
 		if (scmd->type == RDR)
@@ -112,5 +119,3 @@ bool	ft_check_for_files(t_scmd_list *scmd, t_init *process)
 	}
 	return (true);
 }
-// bash checks all for existing, if not existing infile, error, dont check the rest.
-// if all infiles exist, only read out of last one. if all outfiles are created or existing, only send to last one.

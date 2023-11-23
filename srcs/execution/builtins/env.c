@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/31 11:18:44 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/07 17:04:38 by cheyennesch   ########   odam.nl         */
+/*   Updated: 2023/09/14 14:23:51 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,8 @@ void	ft_env_builtin(t_init *process, t_cmd *cmd)
 	{
 		if (cmd->arg[1])
 		{
-			ft_putstr_fd(cmd->arg[0], STDERR_FILENO);
 			process->errorcode = 127;
-			ft_error_env(ENOENT, cmd->arg[1]); // set exitcode to 1
+			ft_error_env(ENOENT, cmd);
 			return ;
 		}
 		while (cmd->env->new_env[i])
@@ -33,6 +32,7 @@ void	ft_env_builtin(t_init *process, t_cmd *cmd)
 			i++;
 		}
 	}
+	process->errorcode = 0;
 }
 
 bool	ft_copy_env(t_init *process, t_env *env, char **old_env)
@@ -56,7 +56,7 @@ bool	ft_copy_env(t_init *process, t_env *env, char **old_env)
 			ft_free_str_array(env->new_env, NULL);
 			return (ft_throw_error(process, ENOMEM), false);
 		}
-		ft_memcpy(env->new_env[i], old_env[i], (str_len + 1));
+		ft_memmove(env->new_env[i], old_env[i], (str_len + 1));
 		i++;
 	}
 	env->new_env[i] = NULL;

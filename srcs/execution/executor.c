@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/04/11 17:02:44 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/08 12:19:08 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/23 16:55:57 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void	ft_reset_process(t_list *lst, t_init *process)
 	process->i = 0;
 	process->nr_of_cmds = 0;
 	if (process->pipes)
-		ft_free_pipes(process->pipes, process->pipe_count);
+		ft_free_pipes(process, process->pipe_count);
 	process->pipe_count = 0;
 	process->fdin = 0;
 	process->fdout = 0;
@@ -33,27 +33,27 @@ void	ft_reset_process(t_list *lst, t_init *process)
 	process->heredoc = false;
 }
 
-/**
- * @brief execve returns -1 if it fails and sets errno, 
- * on success it ends the process
- * 
- * @param cmd 
- */
-void	ft_execve(t_cmd *cmd)
+void	ft_execve(t_list *lst, t_init *process)
 {
-	if (access(cmd->path, F_OK) == -1)
+	rl_clear_history();
+	if (!process->cmd->path || access(process->cmd->path, F_OK) == -1)
 	{
 		ft_putstr_fd("BabyBash: ", STDERR_FILENO);
-		ft_putstr_fd(cmd->arg[0], STDERR_FILENO);
+		ft_putstr_fd(process->cmd->arg[0], STDERR_FILENO);
 		ft_putendl_fd(": command not found", STDERR_FILENO);
+		ft_free_str_array(process->env->new_env, NULL);
+		ft_reset_process(lst, process);
 		exit(127);
 	}
 	else
 	{
-		if (execve(cmd->path, cmd->arg, cmd->env->new_env) == -1)
+		if (execve(process->cmd->path, process->cmd->arg, \
+			process->cmd->env->new_env) == -1)
 		{
 			perror("BabyBash");
-			exit(127);
+			ft_free_str_array(process->env->new_env, NULL);
+			ft_reset_process(lst, process);
+			exit(126);
 		}
 	}
 }
@@ -61,7 +61,6 @@ void	ft_execve(t_cmd *cmd)
 static void	ft_single_scmd(t_list *lst, t_init *process)
 {
 	t_scmd_list	*scmd;
-	t_cmd		*cmd;
 
 	scmd = lst->content;
 	if (!ft_check_for_files(scmd, process))
@@ -70,8 +69,8 @@ static void	ft_single_scmd(t_list *lst, t_init *process)
 	{
 		if (scmd->type == CMD)
 		{
-			cmd = scmd->data;
-			if (cmd->builtin == true)
+			process->cmd = scmd->data;
+			if (process->cmd->builtin == true)
 			{
 				ft_run_builtin(lst, process, scmd->data);
 				break ;
@@ -79,37 +78,55 @@ static void	ft_single_scmd(t_list *lst, t_init *process)
 			else
 			{
 				ft_create_child(lst, process);
-				ft_wait_for_last_child(process);		
+				ft_wait_for_last_child(process);
 			}
 		}
 		scmd = scmd->next;
 	}
+	return ;
 }
 
-void	ft_executor(t_list *lst, t_init *process)
+static bool	ft_executor2(t_list *lst, t_init *process)
 {
-	if (!ft_find_path(lst) || !ft_prep(lst, process) || \
-		!ft_store_old_fd(process))
+	if (!lst->next)
+	{
+		ft_single_scmd(lst, process);
+		if (process->must_exit == true)
+			return (false);
+		return (true);
+	}
+	while (process->must_exit == false && lst)
+	{
+		if (!ft_check_for_files(lst->content, process))
+			break ;
+		ft_create_child(lst, process);
+		ft_restore_old_fd(process);
+		ft_store_old_fd(process);
+		lst = lst->next;
+	}
+	ft_wait_for_last_child(process);
+	if (process->must_exit == true)
+		return (false);
+	return (true);
+}
+
+bool	ft_executor(t_list *lst, t_init *process)
+{
+	if (!lst)
+		return (true);
+	if (!ft_prep(lst, process) || !ft_find_path(lst, process))
 	{
 		ft_reset_process(lst, process);
 		process->errorcode = 1;
 		ft_putendl_fd("Something went wrong in preparations..", STDERR_FILENO);
-		return ;
+		return (false);
 	}
-	if (!lst->next)
-		ft_single_scmd(lst, process);
-	else
+	ft_store_old_fd(process);
+	if (process->must_exit || !ft_executor2(lst, process))
 	{
-		while (lst)
-		{
-			if (!ft_check_for_files(lst->content, process))
-				break ;
-			ft_create_child(lst, process);
-			ft_restore_old_fd(process);
-			ft_store_old_fd(process);
-			lst = lst->next;
-		}
-		ft_wait_for_last_child(process);
+		ft_reset_process(lst, process);
+		return (false);
 	}
 	ft_reset_process(lst, process);
+	return (true);
 }

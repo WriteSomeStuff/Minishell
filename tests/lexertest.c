@@ -54,7 +54,7 @@
 // 	&& ft_strchr("<>", data[1]) == NULL)
 // 		new_data = ft_substr(data, 1, len);
 // 	if (new_data)
-// 		new = new_token(new_data, CMD_OR_FILE_TOKEN);
+// 		new = new_token(new_data, CMD_TOKEN);
 // 	return (new);
 // }
 
@@ -119,7 +119,7 @@
 // 		|| (ft_strncmp(str, ">>", 2) == 0) || (ft_strncmp(str, "<<", 2) == 0))
 // 		return (new_token(str, RDR_TOKEN));
 // 	else
-// 		return (new_token(str, CMD_OR_FILE_TOKEN));
+// 		return (new_token(str, CMD_TOKEN));
 // }
 
 // static size_t	make_tlist(const char **ui_array, t_list **tokens)

@@ -6,7 +6,7 @@
 /*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/04/18 15:29:21 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/01 16:03:06 by mstegema      ########   odam.nl         */
+/*   Updated: 2023/11/22 12:46:04 by mstegema      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,19 +26,19 @@ t_rdr	*ft_allocate_mem_rdr(char *data, t_rdr_type type)
 
 t_cmd	*ft_allocate_mem_cmd(char **arg, t_env *env, bool builtin)
 {
-	t_cmd	*exec;
+	t_cmd	*cmd;
 
-	exec = (t_cmd *)malloc(sizeof(t_cmd));
-	if (!exec)
+	cmd = (t_cmd *)malloc(sizeof(t_cmd));
+	if (!cmd)
 		return (NULL);
-	exec->arg = arg;
-	exec->env = env;
-	exec->builtin = builtin;
-	exec->path = NULL;
-	return (exec);
+	cmd->arg = arg;
+	cmd->env = env;
+	cmd->builtin = builtin;
+	cmd->path = NULL;
+	return (cmd);
 }
 
-t_token	*new_token(const char *data, t_token_type type)
+t_token	*new_token(const char *data)
 {
 	t_token	*token;
 
@@ -46,6 +46,5 @@ t_token	*new_token(const char *data, t_token_type type)
 	if (token == NULL)
 		return (NULL);
 	token->data = (char *)data;
-	token->type = type;
 	return (token);
 }

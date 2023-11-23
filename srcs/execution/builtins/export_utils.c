@@ -6,13 +6,13 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/31 11:14:27 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/07 17:25:03 by cheyennesch   ########   odam.nl         */
+/*   Updated: 2023/11/09 15:12:20 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	ft_fill_env(t_cmd *cmd, t_env *env, t_export *exp, int32_t i)
+void	ft_fill_env(t_init *process, t_cmd *cmd, t_export *exp, int32_t i)
 {
 	while (cmd->env->new_env[i])
 	{
@@ -20,8 +20,9 @@ void	ft_fill_env(t_cmd *cmd, t_env *env, t_export *exp, int32_t i)
 		exp->new_env[i] = malloc((exp->var_len + 1) * sizeof(char));
 		if (!exp->new_env[i])
 		{
-			perror("BabyBash"); // set errorcode to 1
+			ft_throw_error(process, errno);
 			ft_free_str_array(exp->new_env, exp->arg_copy);
+			process->must_exit = true;
 			return ;
 		}
 		ft_memcpy(exp->new_env[i], cmd->env->new_env[i], (exp->var_len + 1));
@@ -29,10 +30,9 @@ void	ft_fill_env(t_cmd *cmd, t_env *env, t_export *exp, int32_t i)
 	}
 	exp->new_env[i] = exp->arg_copy;
 	exp->new_env[i + 1] = NULL;
-	ft_free_str_array(env->new_env, NULL);
-	env->new_env = exp->new_env;
-	env->env_len++;
-	cmd->env->new_env = env->new_env;
+	ft_free_str_array(cmd->env->new_env, NULL);
+	cmd->env->new_env = exp->new_env;
+	cmd->env->env_len++;
 }
 
 void	ft_check_for_plus(char *arg)
@@ -65,7 +65,7 @@ static char	*ft_find_name(char *var)
 		i++;
 	name = malloc((i + 1) * sizeof(char));
 	if (!name)
-		return (perror("BabyBash"), NULL); // set errorcode to 1
+		return (perror("BabyBash"), NULL);
 	name[i--] = '\0';
 	while (i + 1)
 	{
@@ -89,7 +89,7 @@ int32_t	ft_find_value(char *var)
 	return (i + 1);
 }
 
-void	ft_write_export(char **sortedenv)
+bool	ft_write_export(char **sortedenv)
 {
 	char	*name;
 	int32_t	i;
@@ -100,7 +100,7 @@ void	ft_write_export(char **sortedenv)
 	{
 		name = ft_find_name(sortedenv[i]);
 		if (!name)
-			return ;
+			return (false);
 		value = ft_find_value(sortedenv[i]);
 		if (value == -1)
 			printf("declare -x %s\n", name);
@@ -110,4 +110,5 @@ void	ft_write_export(char **sortedenv)
 		name = NULL;
 		i++;
 	}
+	return (true);
 }

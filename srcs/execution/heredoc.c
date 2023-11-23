@@ -6,41 +6,83 @@
 /*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/07/04 14:59:07 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/07 18:09:08 by cheyennesch   ########   odam.nl         */
+/*   Updated: 2023/11/23 17:36:37 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static void	ft_expand(void)
-{
-	return ;
-}
-
-static bool	ft_read_input(char *data, int32_t datalen, int32_t *fd, bool expand)
+static char	*ft_expand_loop(t_init *process, char *str)
 {
 	char	*temp;
-	size_t	templen;
+	char	*final;
 
+	final = expand_data(str, process->env, true);
+	if (!final)
+		return (ft_throw_error(process, ENOMEM), \
+			process->must_exit = true, NULL);
+	while (ft_strchr(final, '$'))
+	{
+		temp = expand_data(final, process->env, true);
+		free(final);
+		if (!temp)
+			return (ft_throw_error(process, ENOMEM), \
+				process->must_exit = true, NULL);
+		final = malloc(sizeof(char) * (ft_strlen(temp) + 1));
+		if (!final)
+			return (ft_throw_error(process, ENOMEM), free(temp), \
+				process->must_exit = true, NULL);
+		ft_memmove(final, temp, ft_strlen(temp) + 1);
+		free(temp);
+		temp = NULL;
+	}
+	return (final);
+}
+
+static bool	ft_expand_check(t_init *process, int32_t *fd, \
+	bool expand, char *str)
+{
+	char	*final;
+
+	if (expand == true && ft_strchr(str, '$'))
+	{
+		final = ft_expand_loop(process, str);
+		if (!final)
+			return (false);
+		if (write(fd[1], final, ft_strlen(final)) == -1 || \
+			write(fd[1], "\n", 1) == -1)
+			perror("BabyBash");
+		free(final);
+		return (true);
+	}
+	if (write(fd[1], str, ft_strlen(str)) == -1 || \
+		write(fd[1], "\n", 1) == -1)
+		perror("BabyBash");
+	return (true);
+}
+
+static bool	ft_read_input(t_init *process, char *data, int32_t *fd, \
+	bool expand)
+{
+	char	*str;
+	size_t	datalen;
+
+	datalen = ft_strlen(data);
 	while (1)
 	{
-		temp = readline("> ");
-		if (!temp)
-			return (false);
-		if (!ft_strncmp(temp, data, datalen))
+		str = readline("> ");
+		if (!str || g_signal == SIGINT || !ft_strncmp(str, data, (datalen + 1)))
 		{
-			free(temp);
+			if (!str)
+				printf("%s\n", \
+					"BabyBash: warning: here-doc delimited by end-of-file");
+			free(str);
 			break ;
 		}
-		if (expand == true)
-			ft_expand();
-		templen = ft_strlen(temp);
-		if (write(fd[1], temp, templen) == -1 || write(fd[1], "\n", 1) == -1)
-		{
-			perror("BabyBash");
-			return (free(temp), false);	
-		}
-		free(temp);
+		if (!ft_expand_check(process, fd, expand, str))
+			return (free(str), false);
+		free(str);
+		str = NULL;
 	}
 	return (true);
 }
@@ -48,40 +90,38 @@ static bool	ft_read_input(char *data, int32_t datalen, int32_t *fd, bool expand)
 static void	ft_remove_quotes(char *data)
 {
 	int32_t	i;
-	int32_t	j;
 
 	i = 0;
 	while (data[i])
 	{
-		if (data[i] == '\'' || data[i] == '"')
+		if (data[i] == '\'' || data[i] == '"' || data[i] == '\n')
 		{
-			j = i;
-			while (data[j])
+			while (data[i])
 			{
-				data[j] = data[j + 1];
-				j++;
+				data[i] = data[i + 1];
+				i++;
 			}
+			i = 0;
 		}
-		i++;
+		else
+			i++;
 	}
 }
 
 bool	ft_heredoc(t_init *process, char *data)
 {
 	int32_t	fd[2];
-	size_t	datalen;
 	bool	expand;
 
 	expand = true;
 	if (pipe(fd) == -1)
 		return (ft_throw_error(process, errno), false);
-	datalen = ft_strlen(data);
 	if (ft_strchr(data, '"') || ft_strchr(data, '\''))
 	{
 		ft_remove_quotes(data);
 		expand = false;
 	}
-	if (!ft_read_input(data, datalen, fd, expand))
+	if (!ft_read_input(process, data, fd, expand))
 	{
 		process->errorcode = 1;
 		if (close(fd[0]) == -1 || close(fd[1]) == -1)
@@ -90,6 +130,6 @@ bool	ft_heredoc(t_init *process, char *data)
 	}
 	if (dup2(fd[0], STDIN_FILENO) == -1 || close(fd[0]) == -1 || \
 		close(fd[1]) == -1)
-		return (ft_throw_error(process, errno), false);
+		ft_throw_error(process, errno);
 	return (true);
 }

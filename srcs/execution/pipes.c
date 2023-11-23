@@ -6,27 +6,28 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/02 13:32:13 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/07 13:00:52 by cheyennesch   ########   odam.nl         */
+/*   Updated: 2023/11/08 17:12:08 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	ft_free_pipes(int32_t **pipes, int32_t pipe_count)
+void	ft_free_pipes(t_init *process, int32_t pipe_count)
 {
 	int32_t	i;
 
 	i = 0;
 	while (i < pipe_count)
 	{
-		free(pipes[i]);
-		pipes[i] = NULL;
+		free(process->pipes[i]);
+		process->pipes[i] = NULL;
 		i++;
 	}
-	if (pipes)
+	process->pipe_count = 0;
+	if (process->pipes)
 	{
-		free(pipes);
-		pipes = NULL;
+		free(process->pipes);
+		process->pipes = NULL;
 	}
 }
 
@@ -57,7 +58,7 @@ bool	ft_create_pipes(t_init *process, size_t pipe_count)
 		if (!process->pipes[i] || pipe(process->pipes[i]) == -1)
 		{
 			perror("BabyBash");
-			ft_free_pipes(process->pipes, i);
+			ft_free_pipes(process, i);
 			return (false);
 		}
 		i++;

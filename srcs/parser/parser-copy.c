@@ -46,7 +46,7 @@
 // 	token = tokens->content;
 // 	if (tokens->next)
 // 		next_token = tokens->next->content;
-// 	if (tokens->next == NULL || next_token->type != CMD_OR_FILE_TOKEN)
+// 	if (tokens->next == NULL || next_token->type != CMD_TOKEN)
 // 		return (ft_putstr_fd("BabyBash: syntax error near unexpected token\n", \
 // 		2), NULL);
 // 	if (ft_strncmp(token->data, ">>", 2) == 0)
@@ -79,7 +79,7 @@
 // 	while (tokens != NULL)
 // 	{
 // 		token = tokens->content;
-// 		if (token->type == CMD_OR_FILE_TOKEN)
+// 		if (token->type == CMD_TOKEN)
 // 		{
 // 			count = count_cmdtokens(&tokens);
 // 			make_cmdnode(tokens, count, env);
@@ -109,7 +109,7 @@
 // // 	while (tokens != NULL)
 // // 	{
 // // 		token = tokens->content;
-// // 		if (token->type == CMD_OR_FILE_TOKEN)
+// // 		if (token->type == CMD_TOKEN)
 // // 		{
 // // 			count = count_cmdtokens(&tokens);
 // // 			node = init_cmdstruct(tokens, count, env);

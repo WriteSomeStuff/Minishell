@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/31 14:49:53 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/07 12:59:33 by cheyennesch   ########   odam.nl         */
+/*   Updated: 2023/09/14 14:08:39 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,8 @@ static void	ft_find_unset_arg(char **env, char *arg, int32_t len)
 	j = 0;
 	while (env[j])
 	{
-		if (!ft_cmpname(arg, env[j], len) && env[j][len] == '=')
+		if (!ft_cmpname(arg, env[j], len) && \
+			(env[j][len] == '=' || !env[j][len]))
 		{
 			temp = env[j];
 			while (env[j])
@@ -53,7 +54,7 @@ static void	ft_find_unset_arg(char **env, char *arg, int32_t len)
 	}
 }
 
-void	ft_unset_builtin(t_cmd *cmd)
+void	ft_unset_builtin(t_init *process, t_cmd *cmd)
 {
 	int32_t	i;
 	size_t	len;
@@ -63,17 +64,19 @@ void	ft_unset_builtin(t_cmd *cmd)
 	i = 1;
 	arg = cmd->arg;
 	env = cmd->env->new_env;
+	process->errorcode = 0;
 	if (!arg[i])
 		return ;
 	while (arg[i])
 	{
 		if (!ft_check_unset_input(arg[i]))
+			process->errorcode = 1;
+		else
 		{
-			i++;
-			continue ;
+			process->errorcode = 0;
+			len = ft_strlen(arg[i]);
+			ft_find_unset_arg(env, arg[i], len);
 		}
-		len = ft_strlen(arg[i]);
-		ft_find_unset_arg(env, arg[i], len);
 		i++;
 	}
 }
