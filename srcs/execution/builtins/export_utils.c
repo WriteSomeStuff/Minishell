@@ -6,13 +6,13 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/31 11:14:27 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/09 15:12:20 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 15:45:43 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	ft_fill_env(t_init *process, t_cmd *cmd, t_export *exp, int32_t i)
+void	ft_fill_env(t_init *process, t_cmd *cmd, t_export *exp, size_t i)
 {
 	while (cmd->env->new_env[i])
 	{
@@ -37,7 +37,7 @@ void	ft_fill_env(t_init *process, t_cmd *cmd, t_export *exp, int32_t i)
 
 void	ft_check_for_plus(char *arg)
 {
-	int32_t	i;
+	size_t	i;
 
 	i = 0;
 	while (arg[i] && arg[i] != '=')
@@ -75,13 +75,11 @@ static char	*ft_find_name(char *var)
 	return (name);
 }
 
-int32_t	ft_find_value(char *var)
+size_t	ft_find_value(char *var)
 {
-	int32_t	i;
-	int32_t	c;
+	size_t	i;
 
 	i = 0;
-	c = 0;
 	while (var[i] && var[i] != '=')
 		i++;
 	if (!var[i])

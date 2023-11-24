@@ -81,7 +81,7 @@ typedef struct s_export
 	char	*arg_copy;
 	size_t	arg_len;
 	size_t	var_len;
-	int32_t	name_len;
+	size_t	name_len;
 	char	*new_var;
 }	t_export;
 
@@ -110,24 +110,24 @@ typedef struct s_token
 	t_token_type	type;
 }	t_token;
 
-typedef struct s_expand_info
-{
-	int32_t	i;
-	int32_t	j;
-	int32_t	dquote_i;
-	int32_t	quote_i;
-	char	*old_data;
-	char	*expanded_data;
-}	t_expand_info;
+// typedef struct s_expand_info
+// {
+// 	int32_t	i;
+// 	int32_t	j;
+// 	int32_t	dquote_i;
+// 	int32_t	quote_i;
+// 	char	*old_data;
+// 	char	*expanded_data;
+// }	t_expand_info; // is this used anywhere?
 
-typedef struct s_expand_length_info
-{
-	int32_t	i;
-	int32_t	length;
-	int32_t	dquote_i;
-	int32_t	quote_i;
-	char	*data;
-}	t_expand_length_info;
+// typedef struct s_expand_length_info
+// {
+// 	int32_t	i;
+// 	int32_t	length;
+// 	int32_t	dquote_i;
+// 	int32_t	quote_i;
+// 	char	*data;
+// }	t_expand_length_info; // is this used anywhere?
 
 // execution builtins
 bool		ft_echo_builtin(t_init *process, t_cmd *cmd);
@@ -138,15 +138,15 @@ void		ft_exit_builtin(t_list *lst, t_init *process, t_cmd *cmd);
 void		ft_env_builtin(t_init *process, t_cmd *cmd);
 bool		ft_copy_env(t_init *process, t_env *env, char **old_env);
 
-void		ft_export_append(t_init *process, t_cmd *cmd, char *arg, int32_t j);
+void		ft_export_append(t_init *process, t_cmd *cmd, char *arg, size_t j);
 
 void		ft_add_new_var(t_init *process, t_cmd *cmd, t_env *env, char *arg);
-void		ft_overwrite_var(t_init *process, t_cmd *cmd, char *arg, int32_t c);
+void		ft_overwrite_var(t_init *process, t_cmd *cmd, char *arg, size_t c);
 void		ft_export_builtin(t_init *process, t_cmd *cmd);
 
-void		ft_fill_env(t_init *process, t_cmd *cmd, t_export *exp, int32_t i);
+void		ft_fill_env(t_init *process, t_cmd *cmd, t_export *exp, size_t i);
 void		ft_check_for_plus(char *arg);
-int32_t		ft_find_value(char *var);
+size_t		ft_find_value(char *var);
 bool		ft_write_export(char **sortedenv);
 
 void		ft_unset_builtin(t_init *process, t_cmd *cmd);
@@ -171,8 +171,8 @@ bool		ft_heredoc(t_init *process, char *data);
 
 bool		ft_find_path(t_list *lst, t_init *process);
 
-void		ft_free_pipes(t_init *process, int32_t pipe_count);
-int32_t		ft_count_pipes(t_list *arglst);
+void		ft_free_pipes(t_init *process, size_t pipe_count);
+size_t		ft_count_pipes(t_list *arglst);
 bool		ft_create_pipes(t_init *process, size_t pipe_count);
 
 // execution signals
@@ -211,7 +211,7 @@ char		*complete_input(t_init *process, char *input);
 // utilities
 int64_t		ft_atollong(t_list *lst, t_init *process, const char *str);
 
-void		ft_bubble_sort(char **sortedenv, int32_t len);
+void		ft_bubble_sort(char **sortedenv, size_t len);
 
 void		ft_restore_old_fd(t_init *process);
 void		ft_store_old_fd(t_init *process);
@@ -231,6 +231,6 @@ t_cmd		*ft_allocate_mem_cmd(char **arg, t_env *env, bool builtin);
 t_token		*new_token(const char *data);
 
 bool		str_equals(char *lhs, char *rhs);
-bool		ft_cmpname(const char *s1, const char *s2, int32_t n);
+bool		ft_cmpname(const char *s1, const char *s2, size_t n);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/08/15 16:49:24 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/22 15:54:32 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 14:33:36 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,15 @@ void	ft_run_builtin(t_list *lst, t_init *process, t_cmd *cmd)
 			process->errorcode = 0;
 	}
 	if (!ft_strncmp("cd", cmd->arg[0], 3))
+	{
+		if (cmd->arg[2])
+		{
+			ft_putendl_fd("BabyBash: cd: too many arguments", STDERR_FILENO);
+			process->errorcode = 1;
+			return ;
+		}
 		ft_cd_builtin(process, cmd);
+	}
 	if (!ft_strncmp("pwd", cmd->arg[0], 4))
 		ft_pwd_builtin(process);
 	if (!ft_strncmp("export", cmd->arg[0], 7))

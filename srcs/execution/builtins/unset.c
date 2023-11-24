@@ -6,32 +6,16 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/31 14:49:53 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/14 14:08:39 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 16:49:44 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static bool	ft_check_unset_input(char *arg)
-{
-	int32_t	j;
-
-	j = 0;
-	if (arg[j] && (ft_isalpha(arg[j]) || (arg[j] == '_' && arg[1])))
-	{
-		while (ft_isalpha(arg[j]) || ft_isdigit(arg[j]) || arg[j] == '_')
-			j++;
-		if (!arg[j])
-			return (true);
-	}
-	ft_error_export_unset("unset", arg);
-	return (false);
-}
-
-static void	ft_find_unset_arg(char **env, char *arg, int32_t len)
+static void	ft_find_unset_arg(char **env, char *arg, size_t len)
 {
 	char	*temp;
-	int32_t	j;
+	size_t	j;
 
 	j = 0;
 	while (env[j])
@@ -56,7 +40,7 @@ static void	ft_find_unset_arg(char **env, char *arg, int32_t len)
 
 void	ft_unset_builtin(t_init *process, t_cmd *cmd)
 {
-	int32_t	i;
+	size_t	i;
 	size_t	len;
 	char	**arg;
 	char	**env;
@@ -69,14 +53,8 @@ void	ft_unset_builtin(t_init *process, t_cmd *cmd)
 		return ;
 	while (arg[i])
 	{
-		if (!ft_check_unset_input(arg[i]))
-			process->errorcode = 1;
-		else
-		{
-			process->errorcode = 0;
-			len = ft_strlen(arg[i]);
-			ft_find_unset_arg(env, arg[i], len);
-		}
+		len = ft_strlen(arg[i]);
+		ft_find_unset_arg(env, arg[i], len);
 		i++;
 	}
 }

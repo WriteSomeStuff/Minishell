@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/09/01 16:57:17 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/08 18:20:07 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 15:29:31 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 static bool	ft_try_paths(char **path, t_cmd *cmd)
 {
-	int32_t	i;
+	size_t	i;
 	char	*cmdpath;
 	char	*temp;
 
@@ -44,7 +44,7 @@ static bool	ft_try_paths(char **path, t_cmd *cmd)
 static bool	ft_is_path(t_init *process, t_cmd *cmd)
 {
 	char	*arg_copy;
-	int		len;
+	size_t	len;
 
 	len = ft_strlen(cmd->arg[0]) + 1;
 	if (cmd->arg[0][0] == '/' || cmd->arg[0][0] == '.')
@@ -66,7 +66,7 @@ static bool	ft_find_path2(t_init *process, t_scmd_list *tempscmd)
 {
 	t_cmd	*tempcmd;
 	char	**path;
-	int32_t	i;
+	size_t	i;
 
 	i = 0;
 	tempcmd = tempscmd->data;

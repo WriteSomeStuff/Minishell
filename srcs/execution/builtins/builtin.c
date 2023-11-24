@@ -6,15 +6,15 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/02 13:32:13 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/23 17:26:36 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 16:38:13 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static bool	ft_echo_check(t_cmd *cmd, int32_t i)
+static bool	ft_echo_check(t_cmd *cmd, size_t i)
 {
-	int32_t	j;
+	size_t	j;
 
 	j = 0;
 	while (cmd->arg[i][j])
@@ -34,7 +34,7 @@ static bool	ft_echo_check(t_cmd *cmd, int32_t i)
 
 bool	ft_echo_builtin(t_init *process, t_cmd *cmd)
 {
-	int32_t	i;
+	size_t	i;
 
 	i = 1;
 	while (cmd->arg[i] && ft_echo_check(cmd, i))
@@ -61,34 +61,6 @@ bool	ft_echo_builtin(t_init *process, t_cmd *cmd)
 	return (true);
 }
 
-void	ft_cd_builtin(t_init *process, t_cmd *cmd)
-{
-	int32_t	i;
-
-	i = 0;
-	if (!cmd->arg[1])
-	{
-		while (cmd->env->new_env[i])
-		{
-			if (ft_strncmp(cmd->env->new_env[i], "HOME=", 5) == 0)
-			{
-				if (chdir(cmd->env->new_env[i] + 5) == -1)
-				{
-					ft_throw_error(process, errno);
-					return ;
-				}
-			}
-			i++;
-		}
-	}
-	else if (chdir(cmd->arg[1]) == -1)
-	{
-		ft_throw_error(process, errno);
-		return ;
-	}
-	process->errorcode = 0;
-}
-
 void	ft_pwd_builtin(t_init *process)
 {
 	char	buffer[MAXPATHLEN];
@@ -104,7 +76,7 @@ void	ft_pwd_builtin(t_init *process)
 
 void	ft_exit_builtin(t_list *lst, t_init *process, t_cmd *cmd)
 {
-	int32_t	i;
+	size_t	i;
 	int64_t	string_to_llong;
 
 	i = 0;

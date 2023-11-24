@@ -6,16 +6,16 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/06/12 18:11:54 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/09 15:11:05 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 15:47:59 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 static void	ft_append_to_var(t_init *process, t_export *exp, char *arg, \
-	int32_t j)
+	size_t j)
 {
-	int32_t	add_from_pos;
+	size_t	add_from_pos;
 
 	add_from_pos = ft_find_value(arg);
 	exp->arg_len = ft_strlen(process->cmd->env->new_env[j]);
@@ -33,7 +33,7 @@ static void	ft_append_to_var(t_init *process, t_export *exp, char *arg, \
 	process->cmd->env->new_env[j] = exp->new_var;
 }
 
-void	ft_export_append(t_init *process, t_cmd *cmd, char *arg, int32_t j)
+void	ft_export_append(t_init *process, t_cmd *cmd, char *arg, size_t j)
 {
 	t_export	exp;
 

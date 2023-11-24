@@ -6,7 +6,7 @@
 /*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/09/04 14:11:39 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/09 23:03:34 by mstegema      ########   odam.nl         */
+/*   Updated: 2023/11/24 15:49:27 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void	ft_free_str_array(char **arr, char *str)
 {
-	int32_t	i;
+	size_t	i;
 
 	i = 0;
 	if (arr)

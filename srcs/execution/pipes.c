@@ -6,15 +6,15 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/02 13:32:13 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/08 17:12:08 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 15:33:51 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	ft_free_pipes(t_init *process, int32_t pipe_count)
+void	ft_free_pipes(t_init *process, size_t pipe_count)
 {
-	int32_t	i;
+	size_t	i;
 
 	i = 0;
 	while (i < pipe_count)
@@ -31,9 +31,9 @@ void	ft_free_pipes(t_init *process, int32_t pipe_count)
 	}
 }
 
-int32_t	ft_count_pipes(t_list *lst)
+size_t	ft_count_pipes(t_list *lst)
 {
-	int32_t	pipe_count;
+	size_t	pipe_count;
 
 	pipe_count = 0;
 	while (lst->next)

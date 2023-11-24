@@ -6,7 +6,7 @@
 /*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/08/01 14:25:42 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/14 13:36:58 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 15:41:45 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 bool	str_equals(char *lhs, char *rhs)
 {
-	int32_t	lhs_length;
-	int32_t	i;
+	size_t	lhs_length;
+	size_t	i;
 
 	lhs_length = ft_strlen(lhs);
 	i = 0;
@@ -30,9 +30,9 @@ bool	str_equals(char *lhs, char *rhs)
 	return (true);
 }
 
-bool	ft_cmpname(const char *s1, const char *s2, int32_t n)
+bool	ft_cmpname(const char *s1, const char *s2, size_t n)
 {
-	int32_t	i;
+	size_t	i;
 
 	i = 0;
 	if (!n)

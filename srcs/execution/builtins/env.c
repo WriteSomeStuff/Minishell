@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/31 11:18:44 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/14 14:23:51 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 15:04:32 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void	ft_env_builtin(t_init *process, t_cmd *cmd)
 {
-	int32_t	i;
+	size_t	i;
 
 	i = 0;
 	if (str_equals("env", cmd->arg[0]))
@@ -37,7 +37,7 @@ void	ft_env_builtin(t_init *process, t_cmd *cmd)
 
 bool	ft_copy_env(t_init *process, t_env *env, char **old_env)
 {
-	int32_t	i;
+	size_t	i;
 	size_t	str_len;
 
 	i = 0;

@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/19 12:55:14 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/09 15:14:58 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 15:45:12 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void	ft_add_new_var(t_init *process, t_cmd *cmd, t_env *env, char *arg)
 	ft_fill_env(process, cmd, &exp, i);
 }
 
-void	ft_overwrite_var(t_init *process, t_cmd *cmd, char *arg, int32_t c)
+void	ft_overwrite_var(t_init *process, t_cmd *cmd, char *arg, size_t c)
 {
 	size_t	len;
 
@@ -59,10 +59,10 @@ void	ft_overwrite_var(t_init *process, t_cmd *cmd, char *arg, int32_t c)
 	ft_memcpy(cmd->env->new_env[c], arg, (len + 1));
 }
 
-static bool	ft_check_export_input(t_init *process, char *arg, int32_t j)
+static bool	ft_check_export_input(t_init *process, char *arg, size_t j)
 {
 	t_cmd	*cmd;
-	int32_t	c;
+	size_t	c;
 
 	cmd = process->cmd;
 	c = 0;
@@ -112,7 +112,7 @@ static bool	ft_export_no_args(t_cmd *cmd)
 
 void	ft_export_builtin(t_init *process, t_cmd *cmd)
 {
-	int32_t	i;
+	size_t	i;
 
 	i = 1;
 	process->errorcode = 0;
