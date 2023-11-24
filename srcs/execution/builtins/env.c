@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/31 11:18:44 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/24 15:04:32 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 18:56:47 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,16 +35,65 @@ void	ft_env_builtin(t_init *process, t_cmd *cmd)
 	process->errorcode = 0;
 }
 
+static bool	ft_copy_env2(t_init *process, t_env *env, size_t pwds, size_t i)
+{
+	char	buffer[MAXPATHLEN];
+
+	if (pwds == 0)
+	{
+		if (!getcwd(buffer, MAXPATHLEN))
+			return (ft_throw_error(process, ENOMEM), false);
+		env->new_env[i] = ft_strjoin("PWD=", buffer);
+		if (!env->new_env[i])
+			return (ft_throw_error(process, ENOMEM), false);
+		env->new_env[i + 1] = ft_strjoin("OLDPWD=", buffer);
+		if (!env->new_env[i + 1])
+			return (ft_throw_error(process, ENOMEM), false);
+		env->env_len += 2;
+	}
+	else if (pwds == 1)
+	{
+		ft_putendl_fd("Please stahp", STDERR_FILENO);
+		return (false);
+	}
+	else
+		env->new_env[i] = NULL;
+	env->new_env[i + 2] = NULL;
+	return (true);
+}
+
+static size_t	ft_env_len(t_env *env, char **old_env)
+{
+	bool	found_pwd;
+	bool	found_oldpwd;
+
+	env->env_len = 0;
+	found_pwd = false;
+	found_oldpwd = false;
+	while (old_env[env->env_len])
+	{
+		if (ft_strncmp(old_env[env->env_len], "PWD=", 4) == 0)
+			found_pwd = true;
+		if (ft_strncmp(old_env[env->env_len], "OLDPWD=", 7) == 0)
+			found_oldpwd = true;
+		env->env_len++;
+	}
+	if (found_oldpwd && found_pwd)
+		return (2);
+	if (!found_oldpwd && !found_pwd)
+		return (0);
+	return (1);
+}
+
 bool	ft_copy_env(t_init *process, t_env *env, char **old_env)
 {
 	size_t	i;
 	size_t	str_len;
+	size_t	pwds;
 
 	i = 0;
-	env->env_len = 0;
-	while (old_env[env->env_len])
-		env->env_len++;
-	env->new_env = malloc((env->env_len + 1) * sizeof(char *));
+	pwds = ft_env_len(env, old_env);
+	env->new_env = malloc((env->env_len + 3) * sizeof(char *));
 	if (!env->new_env)
 		return (ft_throw_error(process, errno), false);
 	while (old_env[i])
@@ -59,6 +108,7 @@ bool	ft_copy_env(t_init *process, t_env *env, char **old_env)
 		ft_memmove(env->new_env[i], old_env[i], (str_len + 1));
 		i++;
 	}
-	env->new_env[i] = NULL;
+	if (!ft_copy_env2(process, env, pwds, i))
+		return (ft_free_str_array(env->new_env, NULL), false);
 	return (true);
 }

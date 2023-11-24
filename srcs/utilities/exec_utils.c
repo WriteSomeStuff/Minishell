@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/08/15 16:49:24 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/24 14:33:36 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 19:09:40 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ void	ft_run_builtin(t_list *lst, t_init *process, t_cmd *cmd)
 			process->errorcode = 1;
 			return ;
 		}
-		ft_cd_builtin(process, cmd);
+		ft_cd_builtin(process, cmd, 0);
 	}
 	if (!ft_strncmp("pwd", cmd->arg[0], 4))
 		ft_pwd_builtin(process);

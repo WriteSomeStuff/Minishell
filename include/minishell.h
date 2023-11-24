@@ -131,7 +131,7 @@ typedef struct s_token
 
 // execution builtins
 bool		ft_echo_builtin(t_init *process, t_cmd *cmd);
-void		ft_cd_builtin(t_init *process, t_cmd *cmd);
+void		ft_cd_builtin(t_init *process, t_cmd *cmd, size_t i);
 void		ft_pwd_builtin(t_init *process);
 void		ft_exit_builtin(t_list *lst, t_init *process, t_cmd *cmd);
 

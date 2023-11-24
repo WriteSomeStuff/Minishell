@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/11/24 16:37:53 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/24 16:38:34 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 19:13:07 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,21 +22,19 @@ static bool	ft_cd3(t_init *process, char *current_path, size_t i, size_t j)
 			process->env->new_env[j] = ft_strjoin("OLDPWD=", \
 				process->env->new_env[i] + 4);
 			if (!process->env->new_env[j])
-			{
-				ft_throw_error(process, ENOMEM);
-				return (false);
-			}
+				return (ft_throw_error(process, ENOMEM), false);
 			free(process->env->new_env[i]);
 			process->env->new_env[i] = ft_strjoin("PWD=", current_path);
 			if (!process->env->new_env[i])
-			{
-				ft_throw_error(process, ENOMEM);
-				return (false);
-			}
+				return (ft_throw_error(process, ENOMEM), false);
 			return (true);
 		}
 		j++;
 	}
+	process->env->new_env[j] = ft_strjoin("OLDPWD=", \
+		process->env->new_env[i] + 4);
+	if (!process->env->new_env[j])
+		return (ft_throw_error(process, ENOMEM), false);
 	return (true);
 }
 
@@ -49,28 +47,26 @@ static bool	ft_cd2(t_init *process, t_cmd *cmd)
 	i = 0;
 	j = 0;
 	if (getcwd(current_path, MAXPATHLEN) == NULL)
-	{
-		ft_throw_error(process, errno);
-		return (true);
-	}
+		return (ft_throw_error(process, errno), true);
 	while (cmd->env->new_env[i])
 	{
 		if (ft_strncmp(cmd->env->new_env[i], "PWD=", 4) == 0)
 		{
 			if (!ft_cd3(process, current_path, i, j))
 				return (false);
+			return (true);
 		}
 		i++;
 	}
-	process->errorcode = 0;
+	cmd->env->new_env[i] = ft_strjoin("PWD=", current_path);
+	if (!cmd->env->new_env[i])
+		return (ft_throw_error(process, ENOMEM), false);
 	return (true);
 }
 
-void	ft_cd_builtin(t_init *process, t_cmd *cmd)
+void	ft_cd_builtin(t_init *process, t_cmd *cmd, size_t i)
 {
-	size_t	i;
-
-	i = 0;
+	process->errorcode = 0;
 	if (!cmd->arg[1])
 	{
 		while (cmd->env->new_env[i])
