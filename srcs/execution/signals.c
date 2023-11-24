@@ -24,7 +24,6 @@ static void	ft_interactive_handler(int32_t signum)
 	}
 	if (signum == SIGQUIT)
 	{
-		rl_replace_line("", 0);
 		rl_on_new_line();
 		rl_redisplay();
 	}
