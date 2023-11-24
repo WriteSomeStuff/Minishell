@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/06/26 12:39:09 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/23 15:10:18 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 13:53:25 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,12 +79,10 @@ static bool	ft_check_for_heredoc(t_scmd_list *scmd, t_init *process)
 					ft_throw_error(process, errno);
 				if (!ft_heredoc(process, rdr->data))
 				{
-					if (signal(SIGQUIT, SIG_IGN) == SIG_ERR)
-						ft_throw_error(process, errno);
+					ft_setup_noninteractive(process);
 					return (false);
 				}
-				if (signal(SIGQUIT, SIG_DFL) == SIG_ERR)
-					ft_throw_error(process, errno);
+				ft_setup_noninteractive(process);
 				process->heredoc = true;
 			}
 		}
