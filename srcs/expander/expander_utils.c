@@ -6,7 +6,7 @@
 /*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/09/08 16:23:16 by mstegema      #+#    #+#                 */
-/*   Updated: 2023/11/23 15:12:44 by mstegema      ########   odam.nl         */
+/*   Updated: 2023/11/24 14:32:38 by mstegema      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ char	*find_end(char *str, char *beginning)
 		i++;
 	while (str[i] != '\0')
 	{
-		if (ft_isalnum(str[i]) == 0 && str[i] != '_')
+		if (ft_isalnum(str[i]) == 0 && str[i] != '_' && str[i] != '?')
 			break ;
 		i++;
 	}
@@ -44,11 +44,12 @@ char	*find_middle(char *str)
 	len = 1;
 	while (str[i] != '\0')
 	{
-		if (str[i] == '$')
+		if (str[i] == '$' && str[i + 1] != ' ')
 		{
 			while (str[i + len] != '\0')
 			{
-				if (ft_isalnum(str[i + len]) == 0 && str[i + len] != '_')
+				if (ft_isalnum(str[i + len]) == 0 && str[i + len] != '_' \
+				&& str[i + len] != '?')
 					break ;
 				len++;
 			}

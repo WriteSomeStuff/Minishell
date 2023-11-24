@@ -6,7 +6,7 @@
 /*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/08/01 14:24:50 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/22 18:11:00 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 15:15:29 by mstegema      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ static t_scmd_list	*init_rdrstruct(t_list *tokens, t_init *process)
 	t_token	*next_token;
 	char	*str;
 
-	str = "BabyBash: syntax error near unexpected token\n";
+	str = "BabyBash: syntax error near unexpected token";
 	rdr = NULL;
 	token = tokens->content;
 	if (tokens->next)
@@ -195,8 +195,8 @@ t_list	*parse(t_env *env, t_init *process, const char *user_input)
 
 	tokens = NULL;
 	tokens = tokenisation(user_input);
-	if (!user_input[0]) // added this to check if empty string when pressing only enter
-		return (NULL);
+	// if (!user_input[0]) // added this to check if empty string when pressing only enter
+	// 	return (NULL);
 	if (!tokens)
 	{
 		process->must_exit = true;

@@ -12,7 +12,7 @@
 
 #include "minishell.h"
 
-static char	*expanded_part(char *str, t_env *env)
+static char	*expanded_part(char *str, t_env *env, t_init *process)
 {
 	char	**env_array;
 	char	*res;
@@ -22,6 +22,10 @@ static char	*expanded_part(char *str, t_env *env)
 	env_array = env->new_env;
 	res = NULL;
 	i = 0;
+	if (str[0] == '\0')
+		return (free(str), ft_strjoin("$", ""));
+	if (str[0] == '?')
+		return (free(str), ft_itoa(process->errorcode));
 	while (env_array[i] != NULL)
 	{
 		len = ft_strlen(str);
@@ -33,11 +37,10 @@ static char	*expanded_part(char *str, t_env *env)
 		}
 		i++;
 	}
-	res = ft_strjoin("", "");
-	return (free(str), res);
+	return (free(str), ft_strjoin("", ""));
 }
 
-char	*expand_data(char *str, t_env *env, bool in_heredoc)
+char	*expand_data(char *str, t_env *env, bool in_heredoc, t_init *process)
 {
 	char	*new_data;
 	char	*temp;
@@ -45,7 +48,7 @@ char	*expand_data(char *str, t_env *env, bool in_heredoc)
 	char	*middle;
 	char	*end;
 
-	beginning = find_begin(str, in_heredoc); //if beginning == str return beginning
+	beginning = find_begin(str, in_heredoc);
 	if (!beginning)
 		return (NULL);
 	end = find_end(str, beginning);
@@ -54,7 +57,7 @@ char	*expand_data(char *str, t_env *env, bool in_heredoc)
 	middle = find_middle(str);
 	if (!middle)
 		return (free(beginning), free(end), NULL);
-	middle = expanded_part(middle, env);
+	middle = expanded_part(middle, env, process);
 	if (!middle)
 		return (free(beginning), free(end), NULL);
 	temp = ft_strjoin(beginning, middle);
@@ -71,20 +74,18 @@ static size_t	replace_token(t_token *token, t_env *env, t_init *process)
 	char	*new_data;
 	char	*temp;
 
-	if (ft_strncmp(token->data, "$?", 3) == 0)
-		new_data = ft_itoa(process->errorcode);
-	else if (ft_strncmp(token->data, "~", 2) == 0)
-		new_data = expand_data("$HOME", env, false);
+	if (ft_strncmp(token->data, "~", 2) == 0)
+		new_data = expand_data("$HOME", env, false, process);
 	else if (ft_strncmp(token->data, "~/", 2) == 0)
 	{
-		temp = expand_data("$HOME", env, false);
+		temp = expand_data("$HOME", env, false, process);
 		if (!temp)
 			return (EXIT_FAILURE);
 		new_data = ft_strjoin(temp, token->data + 1);
 		free(temp);
 	}
 	else
-		new_data = expand_data(token->data, env, false);
+		new_data = expand_data(token->data, env, false, process);
 	if (!new_data)
 		return (EXIT_FAILURE);
 	temp = token->data;
@@ -124,11 +125,11 @@ size_t	expand(t_list *tokens, t_env *env, t_init *process)
 		token = tokens->content;
 		while (token->data != NULL && token->data[i] != '\0')
 		{
-			if (token->data[i] == '$' || ft_strncmp(token->data, "~", 2) \
-			== 0 || ft_strncmp(token->data, "~/", 2) == 0)
+			if ((token->data[i] == '$' && token->data[i + 1] != ' ' ) || \
+			ft_strncmp(token->data, "~", 2) == 0 || \
+			ft_strncmp(token->data, "~/", 2) == 0)
 			{
-				if (expand_check(token->data, i) == true && \
-					ft_strncmp(token->data, "$", 2) != 0)
+				if (expand_check(token->data, i) == true)
 				{
 					if (replace_token(token, env, process) == EXIT_FAILURE)
 						return (EXIT_FAILURE);

@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/31 11:14:27 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/24 15:45:43 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/11/24 19:28:42 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ static char	*ft_find_name(char *var)
 	return (name);
 }
 
-size_t	ft_find_value(char *var)
+int32_t	ft_find_value(char *var)
 {
 	size_t	i;
 
