@@ -14,6 +14,20 @@
 
 int32_t	g_signal = 0;
 
+static bool	ft_only_spaces_check(char *str)
+{
+	size_t	i;
+
+	i = 0;
+	while (str[i])
+	{
+		if (str[i] != ' ')
+			return (false);
+		i++;
+	}
+	return (true);
+}
+
 static t_string_status	read_from_line(char **str)
 {
 	*str = readline("BabyBash$ ");
@@ -24,6 +38,12 @@ static t_string_status	read_from_line(char **str)
 	}
 	else if (!*str[0])
 	{
+		ft_free_str_array(NULL, *str);
+		return (EMPTY_STRING);
+	}
+	else if (ft_only_spaces_check(*str))
+	{
+		add_history(*str);
 		ft_free_str_array(NULL, *str);
 		return (EMPTY_STRING);
 	}
