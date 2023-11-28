@@ -35,29 +35,45 @@ void	ft_env_builtin(t_init *process, t_cmd *cmd)
 	process->errorcode = 0;
 }
 
+static bool	ft_copy_env3(t_init *process, t_env *env, size_t pwds, size_t i)
+{
+	char	buffer[MAXPATHLEN];
+
+	if (pwds == 1)
+	{
+		if (!ft_set_oldpwd(process, env, "no OLDPWD", i))
+			return (false);
+	}
+	else if (pwds == 3)
+	{
+		if (!ft_set_pwd(process, env, buffer, i))
+			return (false);
+	}
+	env->new_env[i + 1] = NULL;
+	env->env_len += 1;
+	return (true);
+}
+
 static bool	ft_copy_env2(t_init *process, t_env *env, size_t pwds, size_t i)
 {
 	char	buffer[MAXPATHLEN];
 
 	if (pwds == 0)
 	{
-		if (!getcwd(buffer, MAXPATHLEN))
-			return (ft_throw_error(process, ENOMEM), false);
-		env->new_env[i] = ft_strjoin("PWD=", buffer);
-		if (!env->new_env[i])
-			return (ft_throw_error(process, ENOMEM), false);
-		env->new_env[i + 1] = ft_strjoin("OLDPWD=", buffer);
-		if (!env->new_env[i + 1])
-			return (ft_throw_error(process, ENOMEM), false);
+		if (!ft_set_pwd(process, env, buffer, i) || !ft_set_oldpwd(process, env, "no OLDPWD", i + 1))
+			return (false);
 		env->env_len += 2;
 	}
-	else if (pwds == 1)
+	else if (pwds == 2)
 	{
-		ft_putendl_fd("Please stahp", STDERR_FILENO);
+		env->new_env[i] = NULL;
+		env->new_env[i + 1] = NULL;
+	}
+	else if (!ft_copy_env3(process, env, pwds, i))
+	{
+		env->new_env[i] = NULL;
 		return (false);
 	}
-	else
-		env->new_env[i] = NULL;
 	env->new_env[i + 2] = NULL;
 	return (true);
 }
@@ -82,7 +98,9 @@ static size_t	ft_env_len(t_env *env, char **old_env)
 		return (2);
 	if (!found_oldpwd && !found_pwd)
 		return (0);
-	return (1);
+	if (!found_oldpwd && found_pwd)
+		return (1);
+	return (3);
 }
 
 bool	ft_copy_env(t_init *process, t_env *env, char **old_env)

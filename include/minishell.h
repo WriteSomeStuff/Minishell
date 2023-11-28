@@ -143,6 +143,8 @@ void		ft_pwd_builtin(t_init *process);
 void		ft_exit_builtin(t_list *lst, t_init *process, t_cmd *cmd);
 
 void		ft_env_builtin(t_init *process, t_cmd *cmd);
+bool		ft_set_oldpwd(t_init *process, t_env *env, char *str, size_t i);
+bool		ft_set_pwd(t_init *process, t_env *env, char *buffer, size_t i);
 bool		ft_copy_env(t_init *process, t_env *env, char **old_env);
 
 void		ft_export_append(t_init *process, t_cmd *cmd, char *arg, size_t j);

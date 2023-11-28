@@ -12,55 +12,50 @@
 
 #include "minishell.h"
 
-static bool	ft_cd3(t_init *process, char *current_path, size_t i, size_t j)
+static bool	ft_cd3(t_init *process, char *buffer, size_t i, size_t j)
 {
 	while (process->env->new_env[j])
 	{
-		if (ft_strncmp(process->env->new_env[j], "OLDPWD=", 7) == 0)
-		{
-			free(process->env->new_env[j]);
-			process->env->new_env[j] = ft_strjoin("OLDPWD=", \
-				process->env->new_env[i] + 4);
-			if (!process->env->new_env[j])
-				return (ft_throw_error(process, ENOMEM), false);
-			free(process->env->new_env[i]);
-			process->env->new_env[i] = ft_strjoin("PWD=", current_path);
-			if (!process->env->new_env[i])
-				return (ft_throw_error(process, ENOMEM), false);
-			return (true);
-		}
+		if (ft_strncmp(process->env->new_env[j], "PWD=", 4) == 0)
+			break ;
 		j++;
 	}
-	process->env->new_env[j] = ft_strjoin("OLDPWD=", \
-		process->env->new_env[i] + 4);
 	if (!process->env->new_env[j])
-		return (ft_throw_error(process, ENOMEM), false);
+	{
+		if (!ft_set_pwd(process, process->env, buffer, j))
+			return (false);
+		return (true);
+	}
+	free(process->env->new_env[i]);
+	if (!ft_set_oldpwd(process, process->env, process->env->new_env[j] + 4, i))
+		return (false);
+	free(process->env->new_env[j]);
+	if (!ft_set_pwd(process, process->env, buffer, j))
+		return (false);
 	return (true);
 }
 
 static bool	ft_cd2(t_init *process, t_cmd *cmd)
 {
-	char	current_path[MAXPATHLEN];
+	char	buffer[MAXPATHLEN];
 	size_t	i;
 	size_t	j;
 
 	i = 0;
 	j = 0;
-	if (getcwd(current_path, MAXPATHLEN) == NULL)
-		return (ft_throw_error(process, errno), true);
 	while (cmd->env->new_env[i])
 	{
-		if (ft_strncmp(cmd->env->new_env[i], "PWD=", 4) == 0)
-		{
-			if (!ft_cd3(process, current_path, i, j))
-				return (false);
-			return (true);
-		}
+		if (ft_strncmp(cmd->env->new_env[i], "OLDPWD=", 7) == 0)
+			break ;
 		i++;
 	}
-	cmd->env->new_env[i] = ft_strjoin("PWD=", current_path);
 	if (!cmd->env->new_env[i])
-		return (ft_throw_error(process, ENOMEM), false);
+	{
+		if (!ft_set_oldpwd(process, process->env, "no OLDPWD", i))
+			return (false);
+	}
+	if (!ft_cd3(process, buffer, i, j))
+		return (false);
 	return (true);
 }
 

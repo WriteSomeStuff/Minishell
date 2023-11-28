@@ -49,7 +49,7 @@ void	ft_run_builtin(t_list *lst, t_init *process, t_cmd *cmd)
 	}
 	if (!ft_strncmp("cd", cmd->arg[0], 3))
 	{
-		if (cmd->arg[2])
+		if (cmd->arg[1] && cmd->arg[2])
 		{
 			ft_putendl_fd("BabyBash: cd: too many arguments", STDERR_FILENO);
 			process->errorcode = 1;
