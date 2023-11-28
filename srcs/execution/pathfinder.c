@@ -19,7 +19,7 @@ static bool	ft_try_paths(char **path, t_cmd *cmd)
 	char	*temp;
 
 	i = 0;
-	while (path[i])
+	while (path && path[i])
 	{
 		temp = ft_strjoin(path[i], "/");
 		if (!temp)
@@ -62,28 +62,40 @@ static bool	ft_is_path(t_init *process, t_cmd *cmd)
 	return (false);
 }
 
+static char	**ft_search_in_env(t_init *process, t_cmd *tempcmd, char **path, size_t i)
+{
+	while (tempcmd->env->new_env[i])
+	{
+		if (ft_strncmp(tempcmd->env->new_env[i], "PATH=", 5) == 0)
+		{
+			path = ft_split(tempcmd->env->new_env[i] + 5, ':');
+			if (!path)
+				process->must_exit = true;
+			return (path);
+		}
+		i++;
+	}
+	return (path);
+}
+
 static bool	ft_find_path2(t_init *process, t_scmd_list *tempscmd)
 {
 	t_cmd	*tempcmd;
 	char	**path;
 	size_t	i;
 
+	path = NULL;
 	i = 0;
 	tempcmd = tempscmd->data;
 	if (tempcmd->builtin == false)
 	{
 		if (ft_is_path(process, tempcmd))
 			return (true);
-		while (tempcmd->env->new_env[i])
-		{
-			if (ft_strncmp(tempcmd->env->new_env[i], "PATH=", 5) == 0)
-			{
-				path = ft_split(tempcmd->env->new_env[i] + 5, ':');
-				if (!path)
-					return (false);
-			}
-			i++;
-		}
+		if (process->must_exit == true)
+			return (false);
+		path = ft_search_in_env(process, tempcmd, path, i);
+		if (process->must_exit == true)
+			return (false);
 		if (!ft_try_paths(path, tempcmd))
 			return (ft_free_str_array(path, NULL), false);
 		return (ft_free_str_array(path, NULL), true);
