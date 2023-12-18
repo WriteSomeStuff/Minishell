@@ -26,6 +26,13 @@
 
 extern int32_t	g_signal;
 
+typedef enum e_quotes
+{
+	NOT_QUOTED = 0,
+	IN_SINGLE = 1,
+	IN_DOUBLE = 2
+}	t_quotes;
+
 typedef enum e_string_status
 {
 	NO_STRING = 0,
@@ -109,6 +116,7 @@ typedef struct s_init
 	int32_t	oldin;
 	bool	heredoc;
 	bool	must_exit;
+	size_t	arg_count;
 }	t_init;
 
 typedef struct s_token
@@ -116,25 +124,6 @@ typedef struct s_token
 	char			*data;
 	t_token_type	type;
 }	t_token;
-
-// typedef struct s_expand_info
-// {
-// 	int32_t	i;
-// 	int32_t	j;
-// 	int32_t	dquote_i;
-// 	int32_t	quote_i;
-// 	char	*old_data;
-// 	char	*expanded_data;
-// }	t_expand_info; // is this used anywhere?
-
-// typedef struct s_expand_length_info
-// {
-// 	int32_t	i;
-// 	int32_t	length;
-// 	int32_t	dquote_i;
-// 	int32_t	quote_i;
-// 	char	*data;
-// }	t_expand_length_info; // is this used anywhere?
 
 // execution builtins
 bool		ft_echo_builtin(t_init *process, t_cmd *cmd);
@@ -173,7 +162,7 @@ void		ft_reset_process(t_list *lst, t_init *process);
 void		ft_execve(t_list *lst, t_init *process);
 bool		ft_executor(t_list *lst, t_init *process);
 
-void		ft_close_fds(t_init *process);
+void		ft_close_pipe_fds(t_init *process);
 bool		ft_check_for_files(t_scmd_list *lst, t_init *process);
 
 bool		ft_heredoc(t_init *process, char *data);
@@ -190,32 +179,32 @@ bool		ft_setup_noninteractive(t_init *process);
 
 // expander
 char		*find_end(char *str, char *beginning);
-char		*find_middle(char *str);
+char		*find_middle(char *str, size_t i, size_t len);
 char		*find_begin(char *str, bool in_heredoc);
 void		multi_free(char *begin, char *mid, char *end, char *temp);
 
+char		*expand_ppid(void);
+
 char		*expand_data(char *str, t_env *env, bool in_heredoc, \
 			t_init *process);
-bool		expand_check(char *str, size_t start);
+t_quotes	quote_check(const char *str, size_t start);
 size_t		expand(t_list *tokens, t_env *env, t_init *process);
 
 // lexer
 t_token		*split_rdrtoken(t_token *token, size_t i);
 size_t		is_splitable(t_token *token);
-size_t		join_datastr(t_list *tokens, t_list *end);
-t_list		*quote_begin(t_list *tokens);
-t_list		*quote_end(t_list *tokens);
 t_list		*tokenisation(const char *user_input);
+char		**lexer_split(char const *s);
 
 // parser
 t_list		*parse(t_env *env, t_init *process, const char *user_input);
 t_list		*make_scmdlist(t_list *tokens, t_scmd_list **scmds, \
-			t_init *process, size_t count);
-t_list		*scmdlist2(t_list *tokens, t_scmd_list **scmds, \
-			t_init *process, size_t count);
+			t_init *process);
+t_list		*scmdlist2(t_list *tokens, t_scmd_list **scmds, t_init *process);
 size_t		remove_quotes(t_list *tokens);
 size_t		count_cmdtokens(t_list **tokens);
 bool		is_builtin(t_list **tokens);
+char		*new_userinput(char *input, char c);
 char		*complete_input(t_init *process, char *input);
 
 // utilities
@@ -223,15 +212,20 @@ int64_t		ft_atollong(t_list *lst, t_init *process, const char *str);
 
 void		ft_bubble_sort(char **sortedenv, size_t len);
 
+void		ft_remove_quotes(char *data);
 void		ft_restore_old_fd(t_init *process);
 void		ft_store_old_fd(t_init *process);
 void		ft_run_builtin(t_list *lst, t_init *process, t_cmd *cmd);
 bool		ft_prep(t_list *lst, t_init *process);
 
+void		freestructs_nodata(t_scmd_list *temp);
+void		freescmdlst_nodata(t_scmd_list **lst);
+void		freelst_nodata(t_list *lst);
+
 void		ft_free_str_array(char **arr, char *str);
 void		freescmdlst(t_scmd_list **lst);
 void		ft_freelst(t_list *lst);
-void		free_tokenlst(t_list *tokens);
+void		free_tokenlst(t_list **tokens, bool free_data);
 
 t_scmd_list	*ft_lstnewscmd(void *data, t_struct_type type, t_init *process);
 void		scmdlst_add_back(t_scmd_list **scmds, t_scmd_list *new);

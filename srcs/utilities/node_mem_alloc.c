@@ -6,7 +6,7 @@
 /*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/04/18 15:29:21 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/22 12:46:04 by mstegema      ########   odam.nl         */
+/*   Updated: 2023/12/06 11:13:53 by mstegema      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,5 +46,6 @@ t_token	*new_token(const char *data)
 	if (token == NULL)
 		return (NULL);
 	token->data = (char *)data;
+	token->type = 0;
 	return (token);
 }

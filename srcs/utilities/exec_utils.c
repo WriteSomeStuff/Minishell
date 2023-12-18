@@ -6,11 +6,32 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/08/15 16:49:24 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/24 19:09:40 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/12/12 15:33:45 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+void	ft_remove_quotes(char *data)
+{
+	size_t	i;
+
+	i = 0;
+	while (data[i])
+	{
+		if (data[i] == '\'' || data[i] == '"' || data[i] == '\n')
+		{
+			while (data[i])
+			{
+				data[i] = data[i + 1];
+				i++;
+			}
+			i = 0;
+		}
+		else
+			i++;
+	}
+}
 
 void	ft_restore_old_fd(t_init *process)
 {

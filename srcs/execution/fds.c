@@ -6,13 +6,13 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/06/26 12:39:09 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/24 16:02:45 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/12/12 15:37:30 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	ft_close_fds(t_init *process)
+void	ft_close_pipe_fds(t_init *process)
 {
 	size_t	i;
 

@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/31 11:18:44 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/24 18:56:47 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/12/12 15:29:31 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,8 @@ static bool	ft_copy_env2(t_init *process, t_env *env, size_t pwds, size_t i)
 
 	if (pwds == 0)
 	{
-		if (!ft_set_pwd(process, env, buffer, i) || !ft_set_oldpwd(process, env, "no OLDPWD", i + 1))
+		if (!ft_set_pwd(process, env, buffer, i) || \
+			!ft_set_oldpwd(process, env, "no OLDPWD", i + 1))
 			return (false);
 		env->env_len += 2;
 	}

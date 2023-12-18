@@ -6,7 +6,7 @@
 /*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/09/04 14:11:39 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/24 15:49:27 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/12/18 15:58:58 by mstegema      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,11 +35,13 @@ void	ft_free_str_array(char **arr, char *str)
 	}
 }
 
-static void	ft_free_structs(t_scmd_list *temp)
+static void	ft_free_structs(t_scmd_list **smcd_list)
 {
-	t_rdr	*rdr;
-	t_cmd	*cmd;
+	t_rdr		*rdr;
+	t_cmd		*cmd;
+	t_scmd_list	*temp;
 
+	temp = *smcd_list;
 	if (temp->type == RDR)
 	{
 		rdr = temp->data;
@@ -49,12 +51,14 @@ static void	ft_free_structs(t_scmd_list *temp)
 			rdr->data = NULL;
 		}
 		free(rdr);
+		rdr = NULL;
 	}
 	else if (temp->type == CMD)
 	{
 		cmd = temp->data;
 		ft_free_str_array(cmd->arg, cmd->path);
 		free(cmd);
+		cmd = NULL;
 	}
 }
 
@@ -67,7 +71,7 @@ void	freescmdlst(t_scmd_list **lst)
 	while (temp)
 	{
 		next = temp->next;
-		ft_free_structs(temp);
+		ft_free_structs(&temp);
 		free(temp);
 		temp = next;
 	}
@@ -92,7 +96,7 @@ void	ft_freelst(t_list *lst)
 	lst = NULL;
 }
 
-void	free_tokenlst(t_list *tokens)
+void	free_tokenlst(t_list **tokens, bool	free_data)
 {
 	t_list	*temp;
 	t_list	*next;
@@ -100,13 +104,19 @@ void	free_tokenlst(t_list *tokens)
 
 	if (!tokens)
 		return ;
-	temp = tokens;
+	temp = *tokens;
 	while (temp)
 	{
 		next = temp->next;
 		token = temp->content;
 		if (token)
+		{
+			if (token->type != CMD_TOKEN && token->data)
+				free(token->data);
+			else if (free_data == true && token->data)
+				free(token->data);
 			free(token);
+		}
 		free(temp);
 		temp = next;
 	}

@@ -6,7 +6,7 @@
 /*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/08/24 17:15:46 by mstegema      #+#    #+#                 */
-/*   Updated: 2023/11/22 13:16:15 by mstegema      ########   odam.nl         */
+/*   Updated: 2023/12/18 16:15:44 by mstegema      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@ static size_t	replace_data(t_token *token, size_t i, size_t j, bool in_single)
 			in_single = !in_single;
 		else if (temp[j] == '\"' && in_single == false)
 			in_double = !in_double;
-		else if ((ft_strchr("<>|\\", temp[j]) != NULL && (in_double == true || \
-			in_single == true)) || ft_strchr("<>|\'\"\\", temp[j]) == NULL)
+		else if ((ft_strchr("<>|\'\"\\", temp[j]) != NULL && (in_double == true \
+			|| in_single == true)) || ft_strchr("<>|\'\"\\", temp[j]) == NULL)
 			new_data[i++] = temp[j];
 		j++;
 	}
@@ -79,13 +79,14 @@ size_t	count_cmdtokens(t_list **tokens)
 	count = 0;
 	while (token->type != PIPE_TOKEN && current != NULL)
 	{
-		token = current->content;
 		if (token->type == CMD_TOKEN)
 			count++;
 		else if (token->type == RDR_TOKEN)
 			current = current->next;
 		if (current != NULL)
 			current = current->next;
+		if (current != NULL)
+			token = current->content;
 	}
 	return (count);
 }
@@ -107,13 +108,19 @@ bool	is_builtin(t_list **tokens)
 	return (false);
 }
 
-t_list	*make_scmdlist(t_list *tokens, t_scmd_list **scmds, \
-				t_init *process, size_t count)
+t_list	*make_scmdlist(t_list *tokens, t_scmd_list **scmds, t_init *process)
 {
+	process->arg_count = 0;
+	if (tokens != NULL && ((t_token *)(tokens->content))->type == PIPE_TOKEN)
+	{
+		ft_putendl_fd("BabyBash: syntax error near unexpected token", \
+		STDERR_FILENO);
+		return (NULL);
+	}
 	while (tokens != NULL && ((t_token *)(tokens->content))->type != PIPE_TOKEN)
 	{
-		tokens = scmdlist2(tokens, scmds, process, count);
-		if (!tokens)
+		tokens = scmdlist2(tokens, scmds, process);
+		if (!tokens && process->must_exit == true)
 			return (NULL);
 	}
 	return (tokens);

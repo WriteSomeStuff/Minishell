@@ -22,10 +22,10 @@ static char	*expanded_part(char *str, t_env *env, t_init *process)
 	env_array = env->new_env;
 	res = NULL;
 	i = 0;
-	if (str[0] == '\0')
-		return (free(str), ft_strjoin("$", ""));
 	if (str[0] == '?')
 		return (free(str), ft_itoa(process->errorcode));
+	if (str[0] == '$')
+		return (free(str), expand_ppid());
 	while (env_array[i] != NULL)
 	{
 		len = ft_strlen(str);
@@ -54,7 +54,7 @@ char	*expand_data(char *str, t_env *env, bool in_heredoc, t_init *process)
 	end = find_end(str, beginning);
 	if (!end)
 		return (free(beginning), NULL);
-	middle = find_middle(str);
+	middle = find_middle(str, 0, 1);
 	if (!middle)
 		return (free(beginning), free(end), NULL);
 	middle = expanded_part(middle, env, process);
@@ -94,24 +94,27 @@ static size_t	replace_token(t_token *token, t_env *env, t_init *process)
 	return (EXIT_SUCCESS);
 }
 
-bool	expand_check(char *str, size_t start)
+static bool	expand_check(char *str, size_t start)
 {
-	bool	in_single;
-	bool	in_double;
+	bool	res;
 	size_t	i;
 
-	in_single = false;
-	in_double = false;
-	i = 0;
-	while (str[i] != '\0' && i < start)
+	res = false;
+	i = start;
+	if (ft_strncmp(str, "~/", 2) == 0 || ft_strncmp(str, "~", 2) == 0)
+		return (true);
+	else if (str[i] == '$' && (str[i + 1] == ' ' || str[i + 1] == '\0'))
+		return (false);
+	else if (quote_check(str, start) == IN_SINGLE)
+		return (false);
+	else if (str[i] == '$' && (str[i + 1] == '\'' || str[i + 1] == '\"'))
 	{
-		if (str[i] == '\'' && in_double == false)
-			in_single = !in_single;
-		if (str[i] == '\"' && in_single == false)
-			in_double = !in_double;
-		i++;
+		if (quote_check(str, start) == NOT_QUOTED)
+			return (true);
+		else
+			return (false);
 	}
-	return (!in_single);
+	return (true);
 }
 
 size_t	expand(t_list *tokens, t_env *env, t_init *process)
@@ -125,15 +128,14 @@ size_t	expand(t_list *tokens, t_env *env, t_init *process)
 		token = tokens->content;
 		while (token->data != NULL && token->data[i] != '\0')
 		{
-			if ((token->data[i] == '$' && token->data[i + 1] != ' ' ) || \
-			ft_strncmp(token->data, "~", 2) == 0 || \
-			ft_strncmp(token->data, "~/", 2) == 0)
+			if (ft_strncmp(token->data, "~/", 2) == 0 || \
+			ft_strncmp(token->data, "~", 2) == 0 || token->data[i] == '$' )
 			{
 				if (expand_check(token->data, i) == true)
 				{
 					if (replace_token(token, env, process) == EXIT_FAILURE)
 						return (EXIT_FAILURE);
-					i = 0;
+					i = -1;
 				}
 			}
 			i++;

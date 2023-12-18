@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/04/11 17:02:44 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/23 16:55:57 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/12/12 17:19:59 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ static void	ft_single_scmd(t_list *lst, t_init *process)
 	t_scmd_list	*scmd;
 
 	scmd = lst->content;
-	if (!ft_check_for_files(scmd, process))
+	if (!ft_check_for_files(scmd, process) || process->fdout == -1)
 		return ;
 	while (scmd)
 	{
@@ -97,8 +97,7 @@ static bool	ft_executor2(t_list *lst, t_init *process)
 	}
 	while (process->must_exit == false && lst)
 	{
-		if (!ft_check_for_files(lst->content, process))
-			break ;
+		ft_check_for_files(lst->content, process);
 		ft_create_child(lst, process);
 		ft_restore_old_fd(process);
 		ft_store_old_fd(process);

@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/09/01 16:57:17 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/24 15:29:31 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/12/12 15:29:20 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,8 @@ static bool	ft_is_path(t_init *process, t_cmd *cmd)
 	return (false);
 }
 
-static char	**ft_search_in_env(t_init *process, t_cmd *tempcmd, char **path, size_t i)
+static char	**ft_search_in_env(t_init *process, t_cmd *tempcmd, char **path, \
+	size_t i)
 {
 	while (tempcmd->env->new_env[i])
 	{
