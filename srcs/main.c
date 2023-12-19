@@ -6,7 +6,7 @@
 /*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/04/11 17:02:44 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/12/15 18:33:36 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/12/19 16:04:00 by mstegema      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ static bool	ft_only_spaces_check(char *str)
 	i = 0;
 	while (str[i])
 	{
-		if (str[i] != ' ')
+		if (is_whitespace_ll(str[i]) == 0)
 			return (false);
 		i++;
 	}

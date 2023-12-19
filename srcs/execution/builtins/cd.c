@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/11/24 16:37:53 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/24 19:13:07 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/12/19 16:52:10 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,8 @@ static bool	ft_cd3(t_init *process, char *buffer, size_t i, size_t j)
 			return (false);
 		return (true);
 	}
-	free(process->env->new_env[i]);
 	if (!ft_set_oldpwd(process, process->env, process->env->new_env[j] + 4, i))
 		return (false);
-	free(process->env->new_env[j]);
 	if (!ft_set_pwd(process, process->env, buffer, j))
 		return (false);
 	return (true);
@@ -51,7 +49,7 @@ static bool	ft_cd2(t_init *process, t_cmd *cmd)
 	}
 	if (!cmd->env->new_env[i])
 	{
-		if (!ft_set_oldpwd(process, process->env, "no OLDPWD", i))
+		if (!ft_set_oldpwd(process, process->env, "no OLDPWD :)", i))
 			return (false);
 	}
 	if (!ft_cd3(process, buffer, i, j))

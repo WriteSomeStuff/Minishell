@@ -208,6 +208,7 @@ char		*new_userinput(char *input, char c);
 char		*complete_input(t_init *process, char *input);
 
 // utilities
+int32_t		is_whitespace_ll(char c);
 int64_t		ft_atollong(t_list *lst, t_init *process, const char *str);
 
 void		ft_bubble_sort(char **sortedenv, size_t len);

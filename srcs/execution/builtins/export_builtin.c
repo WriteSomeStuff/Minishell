@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/19 12:55:14 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/11/24 15:45:12 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/12/19 17:18:04 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,20 +42,21 @@ void	ft_add_new_var(t_init *process, t_cmd *cmd, t_env *env, char *arg)
 
 void	ft_overwrite_var(t_init *process, t_cmd *cmd, char *arg, size_t c)
 {
+	char	*temp;
 	size_t	len;
 
 	if (!ft_strchr(arg, '='))
 		return ;
 	len = ft_strlen(arg);
-	free(cmd->env->new_env[c]);
-	cmd->env->new_env[c] = NULL;
-	cmd->env->new_env[c] = malloc((len + 1) * sizeof(char));
+	temp = malloc((len + 1) * sizeof(char));
 	if (!cmd->env->new_env[c])
 	{
 		ft_throw_error(process, errno);
 		process->must_exit = true;
 		return ;
 	}
+	free(cmd->env->new_env[c]);
+	cmd->env->new_env[c] = temp;
 	ft_memcpy(cmd->env->new_env[c], arg, (len + 1));
 }
 

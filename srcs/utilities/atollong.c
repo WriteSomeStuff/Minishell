@@ -6,13 +6,13 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/02 13:50:56 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/09/14 13:36:47 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/12/19 15:59:05 by mstegema      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static int32_t	is_whitespace_ll(char c)
+int32_t	is_whitespace_ll(char c)
 {
 	if (c == ' ' || c == '\t'
 		|| c == '\r' || c == '\n'

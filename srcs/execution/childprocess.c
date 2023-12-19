@@ -6,7 +6,7 @@
 /*   By: cschabra <cschabra@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/05/02 13:32:13 by cschabra      #+#    #+#                 */
-/*   Updated: 2023/12/12 17:34:54 by cschabra      ########   odam.nl         */
+/*   Updated: 2023/12/19 15:38:13 by cschabra      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@ void	ft_wait_for_last_child(t_init *process)
 	}
 	free(process->ids);
 	process->ids = NULL;
+	if (g_signal == SIGINT)
+		process->errorcode = 130;
 	g_signal = 0;
 }
 

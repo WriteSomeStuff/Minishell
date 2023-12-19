@@ -6,7 +6,7 @@
 /*   By: mstegema <mstegema@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/12/06 15:12:18 by mstegema      #+#    #+#                 */
-/*   Updated: 2023/12/08 15:51:11 by mstegema      ########   odam.nl         */
+/*   Updated: 2023/12/19 16:06:31 by mstegema      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,11 @@ static int	wordcount(char const *s)
 	count = 0;
 	while (s[i] != '\0')
 	{
-		if (s[i] != ' ' && quote_check(s, i) == NOT_QUOTED)
+		if (is_whitespace_ll(s[i]) == 0 && quote_check(s, i) == NOT_QUOTED)
 		{
 			count++;
-			while (s[i] && ((s[i] != ' ' && quote_check(s, i) == NOT_QUOTED) \
-			|| quote_check(s, i) > NOT_QUOTED))
+			while (s[i] && ((is_whitespace_ll(s[i]) == 0 && quote_check(s, i) \
+			== NOT_QUOTED) || quote_check(s, i) > NOT_QUOTED))
 				i++;
 		}
 		else
@@ -39,8 +39,8 @@ static int	wordlen(char const *s, int i)
 	int	len;
 
 	len = 0;
-	while (s[i] && ((s[i] != ' ' && quote_check(s, i) == NOT_QUOTED) \
-	|| quote_check(s, i) > NOT_QUOTED))
+	while (s[i] && ((is_whitespace_ll(s[i]) == 0 && quote_check(s, i) == \
+	NOT_QUOTED) || quote_check(s, i) > NOT_QUOTED))
 	{
 		len++;
 		i++;
@@ -77,7 +77,7 @@ char	**lexer_split(char const *s)
 		return (NULL);
 	while (j < strings)
 	{
-		while (s[i] == ' ')
+		while (is_whitespace_ll(s[i]) == 1)
 			i++;
 		len = wordlen(s, i);
 		res[j] = ft_substr(s, i, len);
